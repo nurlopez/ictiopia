@@ -8,9 +8,9 @@
 [ext_resource type="AudioStream" uid="uid://q8jlbwj6f640" path="res://assets/audio/heart-beat-355442.mp3" id="4_vcuxx"]
 [ext_resource type="PackedScene" uid="uid://bkwbus7m2g1q4" path="res://scenes/environment/Portal.tscn" id="6_i25xe"]
 [ext_resource type="PackedScene" uid="uid://bxblioil7mesr" path="res://scenes/environment/Lightnode.tscn" id="7_tnfui"]
-[ext_resource type="Texture2D" uid="uid://doi6tyei3numh" path="res://assets/art/collectibles/collectibles_shapes-01.png" id="9_b1xmx"]
-[ext_resource type="Texture2D" uid="uid://becxm6f188psl" path="res://assets/art/collectibles/collectibles_shapes-02.png" id="10_su8nw"]
-[ext_resource type="Texture2D" uid="uid://cgw76ixjimsuj" path="res://assets/art/collectibles/collectibles_shapes-03.png" id="11_3hxrv"]
+[ext_resource type="Texture2D" uid="uid://d3p65740ggweg" path="res://assets/art/lightnodes/lightnode-01.png" id="9_b1xmx"]
+[ext_resource type="Texture2D" uid="uid://uujwmph2v4ve" path="res://assets/art/lightnodes/lightnode-02.png" id="10_su8nw"]
+[ext_resource type="Texture2D" uid="uid://dycg6he2i625i" path="res://assets/art/lightnodes/lightnode-03.png" id="11_3hxrv"]
 
 [node name="Level1" type="Node2D"]
 
@@ -80,18 +80,18 @@ position = Vector2(1037, 534)
 unique_name_in_owner = true
 script = ExtResource("4_6r36l")
 
-[node name="Circle" parent="." instance=ExtResource("7_tnfui")]
+[node name="Lightnode1" parent="." instance=ExtResource("7_tnfui")]
 modulate = Color(0.962403, 0.975321, 1, 1)
 position = Vector2(415, 92)
 icon = ExtResource("9_b1xmx")
 required_angle_deg = 45.0
 
-[node name="Hexagon" parent="." instance=ExtResource("7_tnfui")]
+[node name="Lightnode2" parent="." instance=ExtResource("7_tnfui")]
 position = Vector2(993, 290)
 icon = ExtResource("10_su8nw")
 required_angle_deg = 180.0
 
-[node name="Triangle" parent="." instance=ExtResource("7_tnfui")]
+[node name="Lightnode3" parent="." instance=ExtResource("7_tnfui")]
 position = Vector2(224, 544)
 icon = ExtResource("11_3hxrv")
 required_angle_deg = 90.0

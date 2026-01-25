@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b1bfv48n3wf2r"
-path="res://.godot/imported/collectible_triangle.png-518a6c8910b4088d7137a8abc91288d8.ctex"
+uid="uid://d3p65740ggweg"
+path="res://.godot/imported/lightnode-01.png-9006a75a0ba0a8aae1e8696194a10148.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/art/collectibles/collectible_triangle.png"
-dest_files=["res://.godot/imported/collectible_triangle.png-518a6c8910b4088d7137a8abc91288d8.ctex"]
+source_file="res://assets/art/lightnodes/lightnode-01.png"
+dest_files=["res://.godot/imported/lightnode-01.png-9006a75a0ba0a8aae1e8696194a10148.ctex"]
 
 [params]
 

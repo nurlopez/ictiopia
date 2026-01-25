@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://doi6tyei3numh"
-path="res://.godot/imported/collectibles_shapes-01.png-ae5b7da7610bc61af9829a8d6f88ad46.ctex"
+uid="uid://dycg6he2i625i"
+path="res://.godot/imported/lightnode-03.png-d7f1a945581b05a44ab239f01143cde5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/art/collectibles/collectibles_shapes-01.png"
-dest_files=["res://.godot/imported/collectibles_shapes-01.png-ae5b7da7610bc61af9829a8d6f88ad46.ctex"]
+source_file="res://assets/art/lightnodes/lightnode-03.png"
+dest_files=["res://.godot/imported/lightnode-03.png-d7f1a945581b05a44ab239f01143cde5.ctex"]
 
 [params]
 
