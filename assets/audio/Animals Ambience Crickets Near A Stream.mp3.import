@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cpq7to05vd88e"
+path="res://.godot/imported/Animals Ambience Crickets Near A Stream.mp3-c94419ddf677410aef8480767d2c4f10.mp3str"
+
+[deps]
+
+source_file="res://assets/audio/Animals Ambience Crickets Near A Stream.mp3"
+dest_files=["res://.godot/imported/Animals Ambience Crickets Near A Stream.mp3-c94419ddf677410aef8480767d2c4f10.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

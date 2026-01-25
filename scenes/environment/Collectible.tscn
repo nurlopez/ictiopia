@@ -1,0 +1,64 @@
+[gd_scene load_steps=8 format=3 uid="uid://bxblioil7mesr"]
+
+[ext_resource type="Script" path="res://scenes/environment/collectible.gd" id="1_aot60"]
+[ext_resource type="Texture2D" uid="uid://bg4mu5fgu61yr" path="res://assets/art/collectibles/collectible_circle.png" id="2_e4jva"]
+[ext_resource type="AudioStream" uid="uid://duepmgajxmki4" path="res://assets/audio/beepbeep.mp3" id="3_noy7u"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_fjkgu"]
+radius = 20.0
+
+[sub_resource type="Animation" id="Animation_p66v3"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1.6, 1.6)]
+}
+
+[sub_resource type="Animation" id="Animation_f8aik"]
+resource_name = "pulse"
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1.2, 1.2), Vector2(1.1, 1.1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_bowut"]
+_data = {
+"RESET": SubResource("Animation_p66v3"),
+"pulse": SubResource("Animation_f8aik")
+}
+
+[node name="Collectible" type="Area2D"]
+script = ExtResource("1_aot60")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(0.760784, 0.933333, 1, 1)
+scale = Vector2(1.6, 1.6)
+texture = ExtResource("2_e4jva")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_fjkgu")
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_noy7u")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_bowut")
+}

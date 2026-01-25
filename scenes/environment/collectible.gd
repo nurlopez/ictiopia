@@ -1,0 +1,137 @@
+extends Area2D
+
+@onready var audio_player: AudioStreamPlayer = $AudioStreamPlayer
+@onready var sprite: Sprite2D = $Sprite2D
+@onready var shape: CollisionShape2D = $CollisionShape2D
+@onready var anim: AnimationPlayer = $AnimationPlayer
+
+var current_angle_deg: float = 0.0
+
+# --- Visual / per-instance sprite ---
+@export var icon: Texture2D
+@export var icon_scale: float = 1.0
+@export var icon_modulate: Color = Color.WHITE
+
+# --- Stress gating & feedback ---
+@export var required_stress_max: float = 30.0
+@export var knockback_pixels: float = 64.0
+
+# --- Rotation puzzle ---
+@export var angle_step_deg: float = 45.0
+@export var start_angle_deg: float = 0.0
+@export_range(0.0, 359.0, 1.0) var required_angle_deg: float = 0.0
+@export var angle_tolerance_deg: float = 1.0   # how close is “good enough” (in degrees)
+
+# --- SFX (optional) ---
+@export var pickup_sound: AudioStream
+@export var rotate_sound: AudioStream
+@export var fail_sound: AudioStream
+
+# --- Calming effect on pickup  ---
+@export var stress_reduction: float = 25.0
+@export var auto_hide: bool = true
+
+func _wrap360(v: float) -> float:
+	return fposmod(v, 360.0)
+
+func _angle_delta(a: float, b: float) -> float:
+	var ra: float = _wrap360(a)
+	var rb: float = _wrap360(b)
+	var d: float = abs(ra - rb)
+	return min(d, 360.0 - d)
+
+func _is_angle_match(a: float, b: float, tol: float) -> bool:
+	return _angle_delta(a, b) <= tol
+
+func _ready() -> void:
+	# Per-instance sprite look
+	if icon:
+		sprite.texture = icon
+	sprite.scale = Vector2.ONE * icon_scale
+	sprite.modulate = icon_modulate
+	if sprite.has_method("set_centered"):
+		sprite.centered = true  # default is true, but just to be explicit
+
+	# Start at a defined orientation
+	current_angle_deg = _wrap360(start_angle_deg)
+	sprite.rotation_degrees = current_angle_deg
+
+	# Optional: animation
+	if anim:
+		anim.play("pulse")
+
+	# Optional: assign pickup sound via export
+	if pickup_sound and audio_player:
+		audio_player.stream = pickup_sound
+
+	# Ensure signal is connected
+	if not is_connected("body_entered", Callable(self, "_on_body_entered")):
+		connect("body_entered", Callable(self, "_on_body_entered"))
+
+	# Group for LevelController counting
+	add_to_group("collectibles")
+
+
+func _on_body_entered(body: Node) -> void:
+	# Only react to Ictio
+	if body == null or body.name != "Ictio":
+		return
+	var ictio: CharacterBody2D = body as CharacterBody2D
+	if ictio == null:
+		return
+
+	# Gate by stress (use smoothed view for feel)
+	var lc = %LevelController
+	if lc and lc.stress_view > required_stress_max:
+		# Too stressed: knock back one tile and reject
+		var dir: Vector2 = (ictio.global_position - global_position).normalized()
+		ictio.set_deferred("global_position", ictio.global_position + dir * knockback_pixels)
+		# Optional: tiny nudge (comment out if you dislike)
+		var v: Vector2 = ictio.velocity
+		v = v - dir * 150.0
+		ictio.set_deferred("velocity", v)
+
+		# Optional fail sfx
+		if fail_sound and audio_player:
+			audio_player.stream = fail_sound
+			audio_player.volume_db = -6.0
+			audio_player.play()
+		return
+
+	# Rotate by one step (wrap at 360)
+	current_angle_deg = _wrap360(current_angle_deg + angle_step_deg)
+	sprite.rotation_degrees = current_angle_deg
+
+	# Optional rotate tick sfx
+	if rotate_sound and audio_player:
+		audio_player.stream = rotate_sound
+		audio_player.volume_db = -10.0
+		audio_player.play()
+
+	# If angle matches the required angle (within tolerance) -> collect
+	if _is_angle_match(current_angle_deg, required_angle_deg, angle_tolerance_deg):
+		# Reduce stress
+		if lc and lc.has_method("reduce_stress"):
+			lc.reduce_stress(stress_reduction)
+		if lc and lc.has_method("notify_collectible_picked"):
+			lc.notify_collectible_picked()
+
+		# Play pickup sfx (if assigned)
+		if pickup_sound and audio_player:
+			audio_player.stream = pickup_sound
+			audio_player.volume_db = -6.0
+			audio_player.play()
+
+		# Disable collisions (deferred) and hide with tween, then free
+		if shape:
+			shape.set_deferred("disabled", true)
+		set_deferred("monitoring", false)
+
+		if auto_hide and sprite:
+			var tween := create_tween()
+			tween.tween_property(sprite, "scale", sprite.scale * 0.2, 0.25)
+			tween.tween_property(sprite, "modulate:a", 0.0, 0.25)
+			await tween.finished
+			call_deferred("queue_free")
+
+			

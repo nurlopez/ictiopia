@@ -1,0 +1,117 @@
+[gd_scene load_steps=20 format=3 uid="uid://dq2t7e1e5nohl"]
+
+[ext_resource type="Texture2D" uid="uid://n6tlpd5cxbyu" path="res://assets/art/ictio/pastels/ictio1.png" id="1_jy5cu"]
+[ext_resource type="Texture2D" uid="uid://c2b3rqbi6opkw" path="res://assets/art/ictio/pastels/ictio2.png" id="2_conu3"]
+[ext_resource type="Texture2D" uid="uid://cbgoqv2hssvcf" path="res://assets/art/ictio/pastels/ictio3.png" id="3_1hlxj"]
+[ext_resource type="Texture2D" uid="uid://s3047o34r30n" path="res://assets/art/ictio/pastels/ictio4.png" id="4_10nje"]
+[ext_resource type="Texture2D" uid="uid://c2w0455s0q0ly" path="res://assets/art/ictio/pastels/ictio5.png" id="5_pwr5h"]
+[ext_resource type="Texture2D" uid="uid://ckvxcs6a8l64j" path="res://assets/art/ictio/pastels/ictio6.png" id="6_ogmqx"]
+[ext_resource type="Texture2D" uid="uid://cry34bc2cwdil" path="res://assets/art/ictio/pastels/ictio7.png" id="7_6yt5r"]
+[ext_resource type="Texture2D" uid="uid://cgnxkrpi8sbde" path="res://assets/art/ictio/pastels/ictio8.png" id="8_tnv3g"]
+[ext_resource type="Texture2D" uid="uid://onq6lodgsfoy" path="res://assets/art/ictio/pastels/ictio9.png" id="9_cwm50"]
+[ext_resource type="Texture2D" uid="uid://cwex73h68dhxi" path="res://assets/art/ictio/pastels/ictio10.png" id="10_emmot"]
+[ext_resource type="Texture2D" uid="uid://dh3srphf1lgea" path="res://assets/art/ictio/pastels/ictio11.png" id="11_mtd8g"]
+[ext_resource type="Texture2D" uid="uid://cdcq43a5p8d48" path="res://assets/art/bubble.png" id="12_xeln8"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_r8mwa"]
+animations = [{
+"frames": [],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_jy5cu")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_conu3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_1hlxj")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_10nje")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_pwr5h")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_ogmqx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_6yt5r")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_tnv3g")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_cwm50")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_emmot")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_mtd8g")
+}],
+"loop": true,
+"name": &"swim",
+"speed": 6.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_vw15s"]
+radius = 22.0
+
+[sub_resource type="Gradient" id="Gradient_ye564"]
+colors = PackedColorArray(1, 1, 1, 0.917647, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_qhyfx"]
+gradient = SubResource("Gradient_ye564")
+
+[sub_resource type="Curve" id="Curve_yny8e"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_nxuwc"]
+curve = SubResource("Curve_yny8e")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_02vob"]
+particle_flag_disable_z = true
+emission_shape_offset = Vector3(-12, 4, 0)
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 1.0
+emission_ring_radius = 1.0
+emission_ring_inner_radius = 0.0
+gravity = Vector3(0, -15, 0)
+scale_min = 1.6
+scale_max = 2.0
+scale_curve = SubResource("CurveTexture_nxuwc")
+color_ramp = SubResource("GradientTexture1D_qhyfx")
+
+[node name="Ictio" type="CharacterBody2D"]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+rotation = 1.5708
+scale = Vector2(0.3, 0.3)
+sprite_frames = SubResource("SpriteFrames_r8mwa")
+animation = &"swim"
+autoplay = "swim"
+frame_progress = 0.119285
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_vw15s")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+
+[node name="Bubbles" type="GPUParticles2D" parent="."]
+modulate = Color(0.518368, 0.477866, 0.734679, 1)
+z_index = 1
+use_parent_material = true
+position = Vector2(-25, -4)
+amount = 120
+process_material = SubResource("ParticleProcessMaterial_02vob")
+texture = ExtResource("12_xeln8")
+lifetime = 1.2
+visibility_rect = Rect2(-200, -100, 512, 512)
+trail_lifetime = 1.0
