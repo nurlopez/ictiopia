@@ -6,8 +6,8 @@ extends Label
 @onready var ictio := get_node_or_null("%Ictio")
 
 # Match these to your collectible defaults for accurate feedback
-@export var min_effective_speed: float = 60.0
-@export var max_effective_speed: float = 140.0
+@export var min_effective_speed: float = 40.0
+@export var max_effective_speed: float = 160.0
 
 
 func _process(_delta: float) -> void:

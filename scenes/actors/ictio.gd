@@ -1,9 +1,9 @@
 extends CharacterBody2D
 
 # --- Movement tunables ---
-@export var max_speed: float = 220.0
-@export var accel: float = 1200.0
-@export var friction: float = 900.0
+@export var max_speed: float = 200.0
+@export var accel: float = 400.0
+@export var friction: float = 500.0
 
 # --- Bubbles (GPUParticles2D) refs ---
 @onready var bubbles: GPUParticles2D = $Bubbles
