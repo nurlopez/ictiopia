@@ -1,9 +1,11 @@
 extends Area2D
+class_name Lightnode
 
 @onready var audio_player: AudioStreamPlayer = $AudioStreamPlayer
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var shape: CollisionShape2D = $CollisionShape2D
 @onready var anim: AnimationPlayer = $AnimationPlayer
+@onready var point_light: PointLight2D = $PointLight2D
 
 var current_angle_deg: float = 0.0
 
@@ -11,6 +13,15 @@ var current_angle_deg: float = 0.0
 @export var icon: Texture2D
 @export var icon_scale: float = 1.0
 @export var icon_modulate: Color = Color.WHITE
+
+# --- Lit state visuals ---
+@export var dark_alpha: float = 0.3           # how dim when unlit
+@export var lit_color: Color = Color(1.0, 1.0, 0.8)  # warm glow when fixed
+@export var lit_scale_boost: float = 1.2      # scale up when lit
+
+# --- Point light settings ---
+@export var light_energy: float = 1.5         # how bright the light is when lit
+@export var light_color: Color = Color(1.0, 0.95, 0.8)  # warm light color
 
 # --- Speed Moderation (Mechanic I) ---
 @export var min_effective_speed: float = 40.0   # below this = too slow, no rotation
@@ -21,6 +32,7 @@ var current_angle_deg: float = 0.0
 # --- Internal state ---
 var _wobble_tween: Tween = null
 var _original_modulate: Color
+var _is_fixed: bool = false  # true once lightnode reaches target angle
 
 # --- Rotation puzzle ---
 @export var angle_step_deg: float = 45.0
@@ -32,9 +44,6 @@ var _original_modulate: Color
 @export var pickup_sound: AudioStream
 @export var rotate_sound: AudioStream
 @export var fail_sound: AudioStream
-
-# --- Pickup behavior ---
-@export var auto_hide: bool = true
 
 
 func _wrap360(v: float) -> float:
@@ -57,7 +66,12 @@ func _ready() -> void:
 	if icon:
 		sprite.texture = icon
 	sprite.scale = Vector2.ONE * icon_scale
-	sprite.modulate = icon_modulate
+
+	# Start in dark/unlit state
+	var dark_color := icon_modulate
+	dark_color.a = dark_alpha
+	sprite.modulate = dark_color
+
 	if sprite.has_method("set_centered"):
 		sprite.centered = true
 
@@ -78,13 +92,17 @@ func _ready() -> void:
 		connect("body_entered", Callable(self, "_on_body_entered"))
 
 	# Group for LevelController counting
-	add_to_group("collectibles")
+	add_to_group("lightnodes")
 
-	# Store original color for proximity feedback
+	# Store original color for proximity feedback (dark state)
 	_original_modulate = sprite.modulate
 
 
 func _process(_delta: float) -> void:
+	# Skip proximity feedback if already fixed (lit)
+	if _is_fixed:
+		return
+
 	# Proximity color feedback based on Ictio's speed
 	var ictio := get_node_or_null("%Ictio")
 	if ictio == null or sprite == null:
@@ -92,7 +110,7 @@ func _process(_delta: float) -> void:
 
 	var dist: float = global_position.distance_to(ictio.global_position)
 	if dist > proximity_radius:
-		# Outside range - restore original color
+		# Outside range - restore original color (dark state)
 		sprite.modulate = _original_modulate
 		return
 
@@ -174,24 +192,72 @@ func _on_body_entered(body: Node) -> void:
 
 	# --- Check if puzzle solved ---
 	if _is_angle_match(current_angle_deg, required_angle_deg, angle_tolerance_deg):
-		var lc = get_node_or_null("%LevelController")
-		if lc and lc.has_method("notify_collectible_picked"):
-			lc.notify_collectible_picked()
+		_is_fixed = true
 
-		# Pickup SFX
+		var lc = get_node_or_null("%LevelController")
+		if lc and lc.has_method("notify_lightnode_fixed"):
+			lc.notify_lightnode_fixed()
+
+		# Fixed SFX
 		if pickup_sound and audio_player:
 			audio_player.stream = pickup_sound
 			audio_player.volume_db = -6.0
 			audio_player.play()
 
-		# Disable collisions and hide
+		# Disable collisions (no longer interactable)
 		if shape:
 			shape.set_deferred("disabled", true)
 		set_deferred("monitoring", false)
 
-		if auto_hide and sprite:
-			var tween := create_tween()
-			tween.tween_property(sprite, "scale", sprite.scale * 0.2, 0.25)
-			tween.tween_property(sprite, "modulate:a", 0.0, 0.25)
-			await tween.finished
-			call_deferred("queue_free")
+		# Transition to lit state: glow brightly instead of disappearing
+		_become_lit()
+
+
+func _become_lit() -> void:
+	# Stop any ongoing wobble
+	if _wobble_tween and _wobble_tween.is_valid():
+		_wobble_tween.kill()
+
+	# Stop pulse animation
+	if anim:
+		anim.stop()
+
+	# Calculate lit state values
+	var target_scale: Vector2 = Vector2.ONE * icon_scale * lit_scale_boost
+	var target_color: Color = lit_color
+
+	# Enable the point light
+	if point_light:
+		point_light.color = light_color
+		point_light.enabled = true
+
+	# Animate transition from dark to lit
+	var tween := create_tween()
+	tween.set_parallel(true)
+
+	# Scale up slightly
+	tween.tween_property(sprite, "scale", target_scale, 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+
+	# Brighten to lit color
+	tween.tween_property(sprite, "modulate", target_color, 0.3).set_ease(Tween.EASE_OUT)
+
+	# Fade in the point light
+	if point_light:
+		tween.tween_property(point_light, "energy", light_energy, 0.5).set_ease(Tween.EASE_OUT)
+
+	# After initial transition, start gentle glow pulse
+	await tween.finished
+	_start_glow_pulse()
+
+
+func _start_glow_pulse() -> void:
+	# Continuous gentle pulse to show the lightnode is alive and glowing
+	var base_scale: Vector2 = Vector2.ONE * icon_scale * lit_scale_boost
+	var pulse_scale: Vector2 = base_scale * 1.08
+
+	var glow_tween := create_tween()
+	glow_tween.set_loops()  # Loop forever
+
+	# Gentle scale pulse
+	glow_tween.tween_property(sprite, "scale", pulse_scale, 0.8).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	glow_tween.tween_property(sprite, "scale", base_scale, 0.8).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)

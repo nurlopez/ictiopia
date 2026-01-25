@@ -115,3 +115,9 @@ texture = ExtResource("12_xeln8")
 lifetime = 1.2
 visibility_rect = Rect2(-200, -100, 512, 512)
 trail_lifetime = 1.0
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+color = Color(0.7, 0.8, 1, 1)
+energy = 0.6
+texture = ExtResource("12_xeln8")
+texture_scale = 4.0

@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://bxblioil7mesr"]
+[gd_scene load_steps=9 format=3 uid="uid://bxblioil7mesr"]
 
-[ext_resource type="Script" path="res://scenes/environment/collectible.gd" id="1_aot60"]
+[ext_resource type="Script" path="res://scenes/environment/lightnode.gd" id="1_aot60"]
 [ext_resource type="Texture2D" uid="uid://bg4mu5fgu61yr" path="res://assets/art/collectibles/collectible_circle.png" id="2_e4jva"]
 [ext_resource type="AudioStream" uid="uid://duepmgajxmki4" path="res://assets/audio/beepbeep.mp3" id="3_noy7u"]
+[ext_resource type="Texture2D" uid="uid://dqfk5y5jvkfvl" path="res://assets/art/bubble.png" id="4_light"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_fjkgu"]
 radius = 20.0
@@ -44,7 +45,7 @@ _data = {
 "pulse": SubResource("Animation_f8aik")
 }
 
-[node name="Collectible" type="Area2D"]
+[node name="Lightnode" type="Area2D"]
 script = ExtResource("1_aot60")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -62,3 +63,10 @@ stream = ExtResource("3_noy7u")
 libraries = {
 "": SubResource("AnimationLibrary_bowut")
 }
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+enabled = false
+color = Color(1, 0.95, 0.8, 1)
+energy = 0.0
+texture = ExtResource("4_light")
+texture_scale = 8.0
