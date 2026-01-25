@@ -4,7 +4,7 @@
 [ext_resource type="TileSet" uid="uid://dynqbnjogh3e6" path="res://assets/art/tileset_basic.tres" id="1_q6ueu"]
 [ext_resource type="Script" path="res://scenes/actors/ictio.gd" id="3_b8dmh"]
 [ext_resource type="Script" path="res://levels/level_controller.gd" id="4_6r36l"]
-[ext_resource type="Script" path="res://levels/stress_label.gd" id="4_6uqgx"]
+[ext_resource type="Script" path="res://levels/speed_label.gd" id="4_6uqgx"]
 [ext_resource type="AudioStream" uid="uid://q8jlbwj6f640" path="res://assets/audio/heart-beat-355442.mp3" id="4_vcuxx"]
 [ext_resource type="PackedScene" uid="uid://bkwbus7m2g1q4" path="res://scenes/environment/Portal.tscn" id="6_i25xe"]
 [ext_resource type="PackedScene" uid="uid://bxblioil7mesr" path="res://scenes/environment/Collectible.tscn" id="7_tnfui"]
@@ -55,7 +55,7 @@ parameters/looping = true
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="StressLabel" type="Label" parent="CanvasLayer"]
+[node name="SpeedLabel" type="Label" parent="CanvasLayer"]
 anchors_preset = -1
 anchor_left = 0.08
 anchor_top = 0.111

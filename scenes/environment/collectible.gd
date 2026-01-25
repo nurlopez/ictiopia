@@ -12,27 +12,29 @@ var current_angle_deg: float = 0.0
 @export var icon_scale: float = 1.0
 @export var icon_modulate: Color = Color.WHITE
 
-# --- Stress gating & feedback ---
-@export var required_stress_max: float = 30.0
-@export var knockback_pixels: float = 64.0
+# --- Speed Moderation (Mechanic I) ---
+@export var min_effective_speed: float = 60.0   # below this = too slow, no rotation
+@export var max_effective_speed: float = 140.0  # above this = too fast, no rotation
+@export var knockback_pixels: float = 48.0      # bounce distance on wrong speed
 
 # --- Rotation puzzle ---
 @export var angle_step_deg: float = 45.0
 @export var start_angle_deg: float = 0.0
 @export_range(0.0, 359.0, 1.0) var required_angle_deg: float = 0.0
-@export var angle_tolerance_deg: float = 1.0   # how close is “good enough” (in degrees)
+@export var angle_tolerance_deg: float = 1.0   # how close is "good enough" (in degrees)
 
 # --- SFX (optional) ---
 @export var pickup_sound: AudioStream
 @export var rotate_sound: AudioStream
 @export var fail_sound: AudioStream
 
-# --- Calming effect on pickup  ---
-@export var stress_reduction: float = 25.0
+# --- Pickup behavior ---
 @export var auto_hide: bool = true
+
 
 func _wrap360(v: float) -> float:
 	return fposmod(v, 360.0)
+
 
 func _angle_delta(a: float, b: float) -> float:
 	var ra: float = _wrap360(a)
@@ -40,8 +42,10 @@ func _angle_delta(a: float, b: float) -> float:
 	var d: float = abs(ra - rb)
 	return min(d, 360.0 - d)
 
+
 func _is_angle_match(a: float, b: float, tol: float) -> bool:
 	return _angle_delta(a, b) <= tol
+
 
 func _ready() -> void:
 	# Per-instance sprite look
@@ -50,7 +54,7 @@ func _ready() -> void:
 	sprite.scale = Vector2.ONE * icon_scale
 	sprite.modulate = icon_modulate
 	if sprite.has_method("set_centered"):
-		sprite.centered = true  # default is true, but just to be explicit
+		sprite.centered = true
 
 	# Start at a defined orientation
 	current_angle_deg = _wrap360(start_angle_deg)
@@ -72,6 +76,18 @@ func _ready() -> void:
 	add_to_group("collectibles")
 
 
+func _wobble() -> void:
+	# Visual feedback: object wobbles but does NOT rotate
+	if sprite == null:
+		return
+	var original_rot: float = sprite.rotation_degrees
+	var tween := create_tween()
+	tween.tween_property(sprite, "rotation_degrees", original_rot + 8.0, 0.05)
+	tween.tween_property(sprite, "rotation_degrees", original_rot - 8.0, 0.1)
+	tween.tween_property(sprite, "rotation_degrees", original_rot + 4.0, 0.08)
+	tween.tween_property(sprite, "rotation_degrees", original_rot, 0.07)
+
+
 func _on_body_entered(body: Node) -> void:
 	# Only react to Ictio
 	if body == null or body.name != "Ictio":
@@ -80,49 +96,51 @@ func _on_body_entered(body: Node) -> void:
 	if ictio == null:
 		return
 
-	# Gate by stress (use smoothed view for feel)
-	var lc = %LevelController
-	if lc and lc.stress_view > required_stress_max:
-		# Too stressed: knock back one tile and reject
+	# --- Speed Moderation (Mechanic I) ---
+	var speed: float = ictio.velocity.length()
+	var in_goldilocks: bool = speed >= min_effective_speed and speed <= max_effective_speed
+
+	if not in_goldilocks:
+		# Wrong speed: wobble + bounce back, NO rotation
+		_wobble()
+
+		# Bounce Ictio back
 		var dir: Vector2 = (ictio.global_position - global_position).normalized()
 		ictio.set_deferred("global_position", ictio.global_position + dir * knockback_pixels)
-		# Optional: tiny nudge (comment out if you dislike)
 		var v: Vector2 = ictio.velocity
-		v = v - dir * 150.0
+		v = v - dir * 100.0
 		ictio.set_deferred("velocity", v)
 
-		# Optional fail sfx
+		# Fail SFX
 		if fail_sound and audio_player:
 			audio_player.stream = fail_sound
 			audio_player.volume_db = -6.0
 			audio_player.play()
 		return
 
-	# Rotate by one step (wrap at 360)
+	# --- Correct speed: rotate by one step ---
 	current_angle_deg = _wrap360(current_angle_deg + angle_step_deg)
 	sprite.rotation_degrees = current_angle_deg
 
-	# Optional rotate tick sfx
+	# Rotate tick SFX
 	if rotate_sound and audio_player:
 		audio_player.stream = rotate_sound
 		audio_player.volume_db = -10.0
 		audio_player.play()
 
-	# If angle matches the required angle (within tolerance) -> collect
+	# --- Check if puzzle solved ---
 	if _is_angle_match(current_angle_deg, required_angle_deg, angle_tolerance_deg):
-		# Reduce stress
-		if lc and lc.has_method("reduce_stress"):
-			lc.reduce_stress(stress_reduction)
+		var lc = get_node_or_null("%LevelController")
 		if lc and lc.has_method("notify_collectible_picked"):
 			lc.notify_collectible_picked()
 
-		# Play pickup sfx (if assigned)
+		# Pickup SFX
 		if pickup_sound and audio_player:
 			audio_player.stream = pickup_sound
 			audio_player.volume_db = -6.0
 			audio_player.play()
 
-		# Disable collisions (deferred) and hide with tween, then free
+		# Disable collisions and hide
 		if shape:
 			shape.set_deferred("disabled", true)
 		set_deferred("monitoring", false)
@@ -133,5 +151,3 @@ func _on_body_entered(body: Node) -> void:
 			tween.tween_property(sprite, "modulate:a", 0.0, 0.25)
 			await tween.finished
 			call_deferred("queue_free")
-
-			
