@@ -1,9 +1,9 @@
 [gd_scene load_steps=9 format=3 uid="uid://bxblioil7mesr"]
 
 [ext_resource type="Script" path="res://scenes/environment/lightnode.gd" id="1_aot60"]
-[ext_resource type="Texture2D" uid="uid://bg4mu5fgu61yr" path="res://assets/art/collectibles/collectible_circle.png" id="2_e4jva"]
+[ext_resource type="Texture2D" uid="uid://d3p65740ggweg" path="res://assets/art/lightnodes/lightnode-01.png" id="2_e4jva"]
 [ext_resource type="AudioStream" uid="uid://duepmgajxmki4" path="res://assets/audio/beepbeep.mp3" id="3_noy7u"]
-[ext_resource type="Texture2D" uid="uid://dqfk5y5jvkfvl" path="res://assets/art/bubble.png" id="4_light"]
+[ext_resource type="Texture2D" uid="uid://cdcq43a5p8d48" path="res://assets/art/bubble.png" id="4_light"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_fjkgu"]
 radius = 20.0

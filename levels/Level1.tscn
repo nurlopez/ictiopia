@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=4 uid="uid://bdpipoxoclyy7"]
+[gd_scene load_steps=19 format=4 uid="uid://bdpipoxoclyy7"]
 
 [ext_resource type="PackedScene" uid="uid://dq2t7e1e5nohl" path="res://scenes/actors/ictio.tscn" id="1_iqgmq"]
 [ext_resource type="TileSet" uid="uid://dynqbnjogh3e6" path="res://assets/art/tileset_basic.tres" id="1_q6ueu"]
@@ -11,12 +11,25 @@
 [ext_resource type="Texture2D" uid="uid://d3p65740ggweg" path="res://assets/art/lightnodes/lightnode-01.png" id="9_b1xmx"]
 [ext_resource type="Texture2D" uid="uid://uujwmph2v4ve" path="res://assets/art/lightnodes/lightnode-02.png" id="10_su8nw"]
 [ext_resource type="Texture2D" uid="uid://dycg6he2i625i" path="res://assets/art/lightnodes/lightnode-03.png" id="11_3hxrv"]
+[ext_resource type="Script" path="res://systems/nervous_system.gd" id="12_nervous"]
+[ext_resource type="Script" path="res://systems/stress_manager.gd" id="13_stress"]
+[ext_resource type="Script" path="res://systems/circuit_network.gd" id="14_circuit"]
+[ext_resource type="Script" path="res://systems/soundscape_manager.gd" id="15_sound"]
+[ext_resource type="Script" path="res://systems/audio_visual_sync.gd" id="16_avsync"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_horiz"]
+size = Vector2(1280, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vert"]
+size = Vector2(20, 720)
 
 [node name="Level1" type="Node2D"]
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="BackgroundLayer" type="CanvasLayer" parent="."]
+layer = -100
+
+[node name="Background" type="ColorRect" parent="BackgroundLayer"]
 unique_name_in_owner = true
-z_index = -1000
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -41,18 +54,13 @@ position = Vector2(576, 320)
 script = ExtResource("3_b8dmh")
 
 [node name="Camera2D" type="Camera2D" parent="Ictio"]
-limit_left = 0
-limit_top = 0
-limit_right = 1152
-limit_bottom = 640
 position_smoothing_enabled = true
 position_smoothing_speed = 10.0
 
 [node name="Audio" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
 stream = ExtResource("4_vcuxx")
-volume_db = 15.0
-autoplay = true
+volume_db = -80.0
 parameters/looping = true
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
@@ -80,6 +88,23 @@ position = Vector2(1037, 534)
 unique_name_in_owner = true
 script = ExtResource("4_6r36l")
 
+[node name="NervousSystem" type="Node2D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("12_nervous")
+
+[node name="StressManager" type="Node" parent="NervousSystem"]
+script = ExtResource("13_stress")
+
+[node name="CircuitNetwork" type="Node2D" parent="NervousSystem"]
+z_index = 1
+script = ExtResource("14_circuit")
+
+[node name="SoundscapeManager" type="Node" parent="NervousSystem"]
+script = ExtResource("15_sound")
+
+[node name="AudioVisualSync" type="Node" parent="NervousSystem"]
+script = ExtResource("16_avsync")
+
 [node name="Lightnode1" parent="." instance=ExtResource("7_tnfui")]
 modulate = Color(0.962403, 0.975321, 1, 1)
 position = Vector2(415, 92)
@@ -95,3 +120,29 @@ required_angle_deg = 180.0
 position = Vector2(224, 544)
 icon = ExtResource("11_3hxrv")
 required_angle_deg = 90.0
+
+[node name="LevelBounds" type="Node2D" parent="."]
+
+[node name="TopWall" type="StaticBody2D" parent="LevelBounds"]
+position = Vector2(640, -10)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LevelBounds/TopWall"]
+shape = SubResource("RectangleShape2D_horiz")
+
+[node name="BottomWall" type="StaticBody2D" parent="LevelBounds"]
+position = Vector2(640, 730)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LevelBounds/BottomWall"]
+shape = SubResource("RectangleShape2D_horiz")
+
+[node name="LeftWall" type="StaticBody2D" parent="LevelBounds"]
+position = Vector2(-10, 360)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LevelBounds/LeftWall"]
+shape = SubResource("RectangleShape2D_vert")
+
+[node name="RightWall" type="StaticBody2D" parent="LevelBounds"]
+position = Vector2(1290, 360)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LevelBounds/RightWall"]
+shape = SubResource("RectangleShape2D_vert")
