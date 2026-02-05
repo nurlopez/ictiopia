@@ -2,12 +2,26 @@ extends CharacterBody2D
 
 # --- Movement tunables ---
 @export var max_speed: float = 200.0
-@export var accel: float = 400.0
-@export var friction: float = 500.0
+@export var accel: float = 360.0
+@export var friction: float = 420.0
+
+# --- Goldilocks zone (keep in sync with lightnodes) ---
+@export var min_effective_speed: float = 40.0
+@export var max_effective_speed: float = 160.0
+
+# --- Stabilize (hold to keep speed) ---
+@export var stabilize_accel_scale: float = 0.2
+@export var stabilize_friction_scale: float = 2.0
+@export var stabilize_turn_speed: float = 3.5
 
 # --- Bubbles (GPUParticles2D) refs ---
 @onready var bubbles: GPUParticles2D = $Bubbles
 @onready var bubbles_mat: ParticleProcessMaterial = bubbles.process_material
+@onready var stabilize_glow: PointLight2D = $PointLight2D
+
+# --- Stabilize glow ---
+@export var stabilize_glow_energy: float = 1.15
+@export var stabilize_glow_lerp: float = 8.0
 
 signal speed_changed(speed: float)
 
@@ -18,8 +32,8 @@ func _ready() -> void:
 		bubbles_mat.gravity = Vector3(0.0, -15.0, 0.0)
 		# slight base direction to the left (overridden each frame by velocity)
 		bubbles_mat.direction = Vector3(-1.0, 0.0, 0.0)
-		# base spread and size
-		bubbles_mat.spread = 45.0
+		# base spread and size (tighter trail)
+		bubbles_mat.spread = 12.0
 		# ✅ scale is float min/max in 4.3
 		bubbles_mat.scale_min = 0.55
 		bubbles_mat.scale_max = 0.65
@@ -33,19 +47,46 @@ func _physics_process(delta: float) -> void:
 		Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
 		Input.get_action_strength("move_down")  - Input.get_action_strength("move_up")
 	)
+	var stabilizing: bool = Input.is_action_pressed("stabilize")
 
-	var desired: Vector2 = input_vec.normalized() * max_speed
-	var diff: Vector2 = desired - velocity
+	if stabilizing:
+		# Hold-to-stabilize: damp rapid accel/decel without auto-correcting to Goldilocks.
+		var stabilizing_speed: float = velocity.length()
 
-	# --- Accelerate toward desired ---
-	var max_change: float = accel * delta
-	if diff.length() > max_change:
-		diff = diff.normalized() * max_change
-	velocity += diff
+		# If player is steering, allow gentle re-direction at current speed.
+		if input_vec != Vector2.ZERO and stabilizing_speed > 1.0:
+			var steer_target: Vector2 = input_vec.normalized() * stabilizing_speed
+			velocity = velocity.lerp(steer_target, stabilize_turn_speed * delta)
 
-	# --- Friction when idle ---
-	if input_vec == Vector2.ZERO:
-		velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
+		# If player is not steering, reduce deceleration so speed holds longer.
+		if input_vec == Vector2.ZERO:
+			velocity = velocity.move_toward(Vector2.ZERO, (friction * stabilize_accel_scale) * delta)
+		else:
+			# If steering, soften acceleration changes.
+			var desired: Vector2 = input_vec.normalized() * max_speed
+			var diff: Vector2 = desired - velocity
+			var max_change: float = accel * stabilize_accel_scale * delta
+			if diff.length() > max_change:
+				diff = diff.normalized() * max_change
+			velocity += diff
+	else:
+		var desired: Vector2 = input_vec.normalized() * max_speed
+		var diff: Vector2 = desired - velocity
+
+		# --- Accelerate toward desired ---
+		var max_change: float = accel * delta
+		if diff.length() > max_change:
+			diff = diff.normalized() * max_change
+		velocity += diff
+
+		# --- Friction when idle ---
+		if input_vec == Vector2.ZERO:
+			velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
+
+	# Stabilize glow (non-verbal cue)
+	if stabilize_glow:
+		var target_energy: float = stabilize_glow_energy if stabilizing else 0.6
+		stabilize_glow.energy = lerpf(stabilize_glow.energy, target_energy, stabilize_glow_lerp * delta)
 
 	move_and_slide()
 
@@ -57,26 +98,5 @@ func _physics_process(delta: float) -> void:
 	var speed: float = velocity.length()
 	speed_changed.emit(speed)
 
-	# --- Bubbles: dynamic emission + direction + size (Godot 4.3 properties) ---
-	bubbles.emitting = speed > 10.0
-
-	if bubbles_mat:
-		# Direction opposite to movement (fallback left if almost stopped)
-		var dir2: Vector2 = (-velocity.normalized()) if speed > 1.0 else Vector2.LEFT
-		# direction is Vector3 in 4.3
-		bubbles_mat.direction = Vector3(dir2.x, dir2.y, 0.0)
-
-		# Map speed (0..300) → velocity (40..140), then give min/max wiggle
-		var dyn_vel: float = lerp(40.0, 140.0, clamp(speed / 300.0, 0.0, 1.0))
-		bubbles_mat.initial_velocity_min = max(0.0, dyn_vel * 0.85)
-		bubbles_mat.initial_velocity_max = dyn_vel * 1.15
-
-		# ✅ Nicety 1: bubble size scales a bit with speed (float min/max)
-		var dyn_scale: float = lerp(0.45, 0.80, clamp(speed / 300.0, 0.0, 1.0))
-		var smin: float = dyn_scale * 0.95
-		var smax: float = dyn_scale * 1.05
-		bubbles_mat.scale_min = smin
-		bubbles_mat.scale_max = smax
-
-		# ✅ Nicety 2: particle amount scales with speed (on node, not material)
-		bubbles.amount = int(lerp(25.0, 90.0, clamp(speed / 300.0, 0.0, 1.0)))
+	# --- Bubbles: disabled ---
+	bubbles.emitting = false

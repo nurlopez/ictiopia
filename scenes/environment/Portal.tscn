@@ -1,12 +1,12 @@
 [gd_scene load_steps=8 format=3 uid="uid://bkwbus7m2g1q4"]
 
-[ext_resource type="Texture2D" uid="uid://dybcgxu0fdehd" path="res://icon.svg" id="1_kh5qx"]
+[ext_resource type="Texture2D" uid="uid://cdcq43a5p8d48" path="res://assets/art/bubble.png" id="1_bloom"]
 [ext_resource type="Script" path="res://scenes/environment/portal.gd" id="1_tx8t0"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_vr1p7"]
 radius = 36.0
 
-[sub_resource type="Animation" id="Animation_1eihx"]
+[sub_resource type="Animation" id="Animation_reset"]
 length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -18,24 +18,12 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Vector2(1, 1)]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("Sprite2D:modulate")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Color(0.203922, 1, 1, 1)]
+"values": [Vector2(4, 4)]
 }
 
-[sub_resource type="Animation" id="Animation_1ytjr"]
+[sub_resource type="Animation" id="Animation_idle"]
 resource_name = "idle"
-length = 1.2
+length = 2.0
 loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -44,10 +32,10 @@ tracks/0/path = NodePath("Sprite2D:scale")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.6, 1.2),
+"times": PackedFloat32Array(0, 1, 2),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [Vector2(1, 1), Vector2(1.05, 1.05), Vector2(1, 1)]
+"values": [Vector2(4, 4), Vector2(4.4, 4.4), Vector2(4, 4)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -56,15 +44,15 @@ tracks/1/path = NodePath("Sprite2D:modulate")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.6, 1.2),
+"times": PackedFloat32Array(0, 1, 2),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [Color(0.203922, 1, 1, 0.811765), Color(0.203922, 1, 1, 1), Color(0.203922, 1, 1, 0.745098)]
+"values": [Color(0.6, 0.95, 1, 0.7), Color(0.6, 0.95, 1, 1), Color(0.6, 0.95, 1, 0.7)]
 }
 
-[sub_resource type="Animation" id="Animation_d5nfd"]
+[sub_resource type="Animation" id="Animation_open"]
 resource_name = "open"
-length = 0.35
+length = 0.45
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -72,10 +60,10 @@ tracks/0/path = NodePath("Sprite2D:scale")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.333333),
+"times": PackedFloat32Array(0, 0.45),
 "transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [Vector2(0.9, 0.9), Vector2(1.15, 1.15)]
+"values": [Vector2(3, 3), Vector2(4.4, 4.4)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -84,25 +72,26 @@ tracks/1/path = NodePath("Sprite2D:modulate")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.333333),
+"times": PackedFloat32Array(0, 0.45),
 "transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [Color(0.203922, 1, 1, 0), Color(0.203922, 1, 1, 1)]
+"values": [Color(0.6, 0.95, 1, 0), Color(0.6, 0.95, 1, 1)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_s11tt"]
 _data = {
-"RESET": SubResource("Animation_1eihx"),
-"idle": SubResource("Animation_1ytjr"),
-"open": SubResource("Animation_d5nfd")
+"RESET": SubResource("Animation_reset"),
+"idle": SubResource("Animation_idle"),
+"open": SubResource("Animation_open")
 }
 
 [node name="Portal" type="Area2D"]
 script = ExtResource("1_tx8t0")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-modulate = Color(0.203922, 1, 1, 1)
-texture = ExtResource("1_kh5qx")
+modulate = Color(0.6, 0.95, 1, 0.9)
+scale = Vector2(4, 4)
+texture = ExtResource("1_bloom")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_vr1p7")

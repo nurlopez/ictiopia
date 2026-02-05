@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://biu6dls6u76be"
-path="res://.godot/imported/ictio6.png-d3f66c1eed0ecde0385f1ddc8de3cc09.ctex"
+uid="uid://behtx4kxwlpyy"
+path="res://.godot/imported/ictio-8.png-fce66352fa82a81b4508db9eac581f7d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/art/ictio/ictio6.png"
-dest_files=["res://.godot/imported/ictio6.png-d3f66c1eed0ecde0385f1ddc8de3cc09.ctex"]
+source_file="res://assets/art/ictio/carp/ictio-8.png"
+dest_files=["res://.godot/imported/ictio-8.png-fce66352fa82a81b4508db9eac581f7d.ctex"]
 
 [params]
 

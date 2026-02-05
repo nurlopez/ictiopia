@@ -13,8 +13,10 @@ const CircuitLineScene := preload("res://systems/circuit_line.gd")
 @export var proximity_boost: float = 0.3         # extra distortion when player is near
 
 # Visual settings
-@export var line_color_dim: Color = Color(0.2, 0.4, 0.6, 0.3)
-@export var line_color_lit: Color = Color(0.4, 0.7, 0.9, 0.7)
+@export var line_color_dim: Color = Color(0.04, 0.09, 0.52, 0.5)
+@export var line_color_lit: Color = Color(0.011765, 0.011765, 0.803922, 0.8)
+@export var lines_per_connection: int = 3    # multiple tendrils between each pair
+@export var bundle_spread: float = 18.0      # perpendicular spread for bundled tendrils
 
 # State
 var _lines: Array[CircuitLine] = []
@@ -56,15 +58,17 @@ func _create_circuit_network() -> void:
 	# For triangle: connect each pair
 	for i in range(_lightnodes.size()):
 		for j in range(i + 1, _lightnodes.size()):
-			_create_line(_lightnodes[i], _lightnodes[j])
+			for k in range(lines_per_connection):
+				_create_line(_lightnodes[i], _lightnodes[j], k, lines_per_connection)
 
 	print("[CircuitNetwork] Created ", _lines.size(), " circuit lines")
 
 
-func _create_line(from_node: Node2D, to_node: Node2D) -> CircuitLine:
+func _create_line(from_node: Node2D, to_node: Node2D, line_index: int, line_total: int) -> CircuitLine:
 	var line := CircuitLine.new()
 	add_child(line)
-	line.setup(from_node, to_node)
+	line.setup(from_node, to_node, line_index, line_total, bundle_spread)
+	line.set_palette(line_color_dim, line_color_lit)
 	_lines.append(line)
 	return line
 

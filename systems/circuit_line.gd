@@ -13,9 +13,15 @@ var start_node: Node2D
 var end_node: Node2D
 
 # Curve generation settings
-@export var segments_per_control: int = 8   # smoothness of curves
-@export var curve_variance: float = 40.0    # how far control points deviate
-@export var control_point_count: int = 3    # number of intermediate control points
+@export var segments_per_control: int = 10  # smoothness of curves
+@export var curve_variance: float = 55.0    # how far control points deviate
+@export var control_point_count: int = 4    # number of intermediate control points
+
+# Visual palette (overridable by CircuitNetwork)
+@export var dim_color: Color = Color(0.04, 0.09, 0.52, 0.5)
+@export var lit_color: Color = Color(0.011765, 0.011765, 0.803922, 0.8)
+@export var base_width: float = 1.4
+@export var lit_width: float = 2.2
 
 # Distortion state (set by shader uniforms)
 var distortion_intensity: float = 0.0
@@ -28,19 +34,46 @@ var _control_points: PackedVector2Array
 
 func _ready() -> void:
 	# Set visual properties
-	width = 3.0
-	default_color = Color(0.7, 0.8, 0.9, 0.5)  # light blue-white, visible
+	width = base_width
+	default_color = dim_color
+	texture_mode = Line2D.LINE_TEXTURE_TILE
 	joint_mode = Line2D.LINE_JOINT_ROUND
 	begin_cap_mode = Line2D.LINE_CAP_ROUND
 	end_cap_mode = Line2D.LINE_CAP_ROUND
+	_setup_width_curve()
 
 
-func setup(from_node: Node2D, to_node: Node2D) -> void:
+func setup(from_node: Node2D, to_node: Node2D, line_index: int = 0, line_total: int = 1, endpoint_spread: float = 0.0) -> void:
 	start_node = from_node
 	end_node = to_node
-	start_pos = from_node.global_position
-	end_pos = to_node.global_position
+	_apply_endpoint_offsets(from_node, to_node, line_index, line_total, endpoint_spread)
 	_generate_organic_curve()
+
+
+func _setup_width_curve() -> void:
+	# Thin, tendril-like profile with subtle taper at the ends
+	if width_curve:
+		return
+	var curve := Curve.new()
+	curve.add_point(Vector2(0.0, 0.45))
+	curve.add_point(Vector2(0.5, 1.0))
+	curve.add_point(Vector2(1.0, 0.45))
+	width_curve = curve
+
+
+func _apply_endpoint_offsets(from_node: Node2D, to_node: Node2D, line_index: int, line_total: int, endpoint_spread: float) -> void:
+	var raw_start: Vector2 = from_node.global_position
+	var raw_end: Vector2 = to_node.global_position
+	var direction: Vector2 = (raw_end - raw_start).normalized()
+	var perpendicular: Vector2 = Vector2(-direction.y, direction.x)
+	var spread_factor: float = 0.0
+	if line_total > 1:
+		spread_factor = (float(line_index) / float(line_total - 1)) * 2.0 - 1.0
+	var bundle_offset: Vector2 = perpendicular * endpoint_spread * spread_factor
+	var jitter: Vector2 = perpendicular * randf_range(-endpoint_spread * 0.15, endpoint_spread * 0.15)
+	jitter += direction * randf_range(-endpoint_spread * 0.1, endpoint_spread * 0.1)
+	start_pos = raw_start + bundle_offset + jitter
+	end_pos = raw_end + bundle_offset - jitter
 
 
 func _generate_organic_curve() -> void:
@@ -130,11 +163,14 @@ func set_audio_pulse(pulse: float) -> void:
 
 func set_activation_level(level: float) -> void:
 	## level 0 = dim, level 1 = bright white (both lightnodes fixed)
-	var alpha: float = lerpf(0.5, 0.95, level)
-	var brightness: float = lerpf(0.7, 1.0, level)
-	# White-ish color that brightens as lightnodes are fixed
-	default_color = Color(brightness, brightness * 1.05, brightness * 1.1, alpha)
-	width = lerpf(3.0, 5.0, level)
+	default_color = dim_color.lerp(lit_color, level)
+	width = lerpf(base_width, lit_width, level)
+
+
+func set_palette(dim: Color, lit: Color) -> void:
+	dim_color = dim
+	lit_color = lit
+	default_color = dim_color
 
 
 func get_nearest_point_distance(pos: Vector2) -> float:

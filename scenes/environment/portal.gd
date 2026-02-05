@@ -30,6 +30,11 @@ func open_portal() -> void:
 	# Called by LevelController when calm mode starts
 	accepts_player = true
 	shape.set_deferred("disabled", false)
+
+	# Fade in if hidden
+	var tween := create_tween()
+	tween.tween_property(self, "modulate:a", 1.0, 0.35)
+
 	# Play open anim + sound
 	if anim.has_animation("open"):
 		anim.play("open")
@@ -41,10 +46,6 @@ func open_portal() -> void:
 		audio.stream = open_sound
 		audio.volume_db = -6.0
 		audio.play()
-
-	# Fade in if hidden
-	var tween := create_tween()
-	tween.tween_property(self, "modulate:a", 1.0, 0.35)
 
 func _on_body_entered(body: Node) -> void:
 	if not accepts_player:
@@ -60,7 +61,7 @@ func _on_body_entered(body: Node) -> void:
 
 	# Gentle fade-out (end-of-level placeholder)
 	var tween := create_tween()
-	tween.tween_property($Sprite2D, "modulate:a", 0.0, on_enter_fade_time)
+	tween.tween_property(sprite, "modulate:a", 0.0, on_enter_fade_time)
 	await tween.finished
 
 	# Placeholder end action: restart level (you can replace with a next-level load)

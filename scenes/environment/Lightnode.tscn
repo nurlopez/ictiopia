@@ -49,7 +49,7 @@ _data = {
 script = ExtResource("1_aot60")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-modulate = Color(0.760784, 0.933333, 1, 1)
+modulate = Color(0.011765, 0.011765, 0.803922, 1)
 scale = Vector2(1.6, 1.6)
 texture = ExtResource("2_e4jva")
 
@@ -66,7 +66,7 @@ libraries = {
 
 [node name="PointLight2D" type="PointLight2D" parent="."]
 enabled = false
-color = Color(1, 0.95, 0.8, 1)
+color = Color(0.952941, 0.027451, 0.043137, 1)
 energy = 0.0
 texture = ExtResource("4_light")
 texture_scale = 8.0

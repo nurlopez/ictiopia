@@ -12,16 +12,16 @@ var current_angle_deg: float = 0.0
 # --- Visual / per-instance sprite ---
 @export var icon: Texture2D
 @export var icon_scale: float = 1.0
-@export var icon_modulate: Color = Color.WHITE
+@export var icon_modulate: Color = Color(0.3, 0.2, 0.55)
 
 # --- Lit state visuals ---
-@export var dark_alpha: float = 0.3           # how dim when unlit
-@export var lit_color: Color = Color(1.0, 1.0, 0.8)  # warm glow when fixed
+@export var dark_alpha: float = 0.9           # how dim when unlit
+@export var lit_color: Color = Color(0.952941, 0.027451, 0.043137)  # warm glow when fixed
 @export var lit_scale_boost: float = 1.2      # scale up when lit
 
 # --- Point light settings ---
 @export var light_energy: float = 1.5         # how bright the light is when lit
-@export var light_color: Color = Color(1.0, 0.95, 0.8)  # warm light color
+@export var light_color: Color = Color(0.952941, 0.027451, 0.043137)  # warm light color
 
 # --- Speed Moderation (Mechanic I) ---
 @export var min_effective_speed: float = 40.0   # below this = too slow, no rotation
@@ -118,14 +118,14 @@ func _process(_delta: float) -> void:
 	var speed: float = ictio.velocity.length()
 	var tint: Color
 	if speed < min_effective_speed:
-		# Too slow - blue-grey tint
-		tint = Color(0.6, 0.7, 0.9)
+		# Too slow - deep blue tint
+		tint = Color(0.027451, 0.062745, 0.454902)
 	elif speed > max_effective_speed:
-		# Too fast - reddish tint
-		tint = Color(1.0, 0.6, 0.5)
+		# Too fast - red tint
+		tint = Color(0.952941, 0.027451, 0.043137)
 	else:
-		# Goldilocks zone - green tint (good!)
-		tint = Color(0.5, 1.0, 0.6)
+		# Goldilocks zone - bright blue tint (good!)
+		tint = Color(0.011765, 0.011765, 0.803922)
 
 	# Blend tint with original based on proximity (closer = stronger tint)
 	var blend: float = 1.0 - (dist / proximity_radius)

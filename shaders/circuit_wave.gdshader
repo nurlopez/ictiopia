@@ -13,10 +13,10 @@ uniform float wave_amplitude : hint_range(0.0, 20.0) = 6.0;
 uniform float noise_scale : hint_range(1.0, 10.0) = 4.0;
 uniform float noise_speed : hint_range(0.1, 2.0) = 0.5;
 
-// Color modulation - white/light colors for visibility
-uniform vec4 base_color : source_color = vec4(0.8, 0.85, 0.95, 0.6);
-uniform vec4 stress_color : source_color = vec4(1.0, 0.7, 0.8, 0.8);
-uniform vec4 pulse_color : source_color = vec4(0.9, 0.95, 1.0, 0.95);
+// Color modulation - palette-aligned for visibility
+uniform vec4 base_color : source_color = vec4(0.011765, 0.011765, 0.803922, 0.6);
+uniform vec4 stress_color : source_color = vec4(0.952941, 0.027451, 0.043137, 0.8);
+uniform vec4 pulse_color : source_color = vec4(0.952941, 0.027451, 0.043137, 0.95);
 
 // Simple noise function
 float hash(vec2 p) {

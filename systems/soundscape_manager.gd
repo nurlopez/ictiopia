@@ -7,9 +7,9 @@ class_name SoundscapeManager
 signal audio_intensity_changed(intensity: float)
 
 # Audio paths
-const CALM_AUDIO := "res://assets/audio/underwater-ambience-376890.mp3"
+const CALM_AUDIO := "res://assets/audio/calm.mp3"
 const NEUTRAL_AUDIO := "res://assets/audio/distant-signal-drone-74016.mp3"
-const TENSE_AUDIO := "res://assets/audio/heart-beat-355442.mp3"
+const TENSE_AUDIO := "res://assets/audio/tension.mp3"
 const STRESS_AUDIO := "res://assets/audio/weird-pulse-sonar-sound-64566.mp3"
 
 # Audio players (created at runtime)

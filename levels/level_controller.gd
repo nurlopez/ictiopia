@@ -8,6 +8,7 @@ extends Node
 @export var level_bounds: Rect2i = Rect2i(0, 0, 1280, 720)
 
 @onready var tint := get_node_or_null("%Tint")
+@onready var background := get_node_or_null("%Background")
 @onready var audio_player: AudioStreamPlayer = get_node_or_null("%Audio")
 
 @warning_ignore("UNUSED_SIGNAL")
@@ -18,8 +19,8 @@ var total_lightnodes: int = 0
 var started_with_lightnodes := false
 
 # Progressive lighting settings
-@export var dark_color: Color = Color(0.15, 0.15, 0.2)    # Starting darkness
-@export var lit_color: Color = Color(0.5, 0.55, 0.65)     # Fully lit (still moody)
+@export var dark_color: Color = Color(0.18, 0.18, 0.22)    # Starting darkness
+@export var lit_color: Color = Color(0.35, 0.35, 0.45)     # Fully lit (still moody)
 
 
 func _ready() -> void:
@@ -33,6 +34,9 @@ func _ready() -> void:
 
 	# Start in darkness
 	_apply_darkness()
+
+	# Fit background to level bounds
+	_configure_background()
 
 	# Apply level bounds to camera
 	_configure_camera_limits()
@@ -48,6 +52,13 @@ func _configure_camera_limits() -> void:
 		camera.limit_top = level_bounds.position.y
 		camera.limit_right = level_bounds.position.x + level_bounds.size.x
 		camera.limit_bottom = level_bounds.position.y + level_bounds.size.y
+
+
+func _configure_background() -> void:
+	if not background:
+		return
+	background.position = level_bounds.position
+	background.size = level_bounds.size
 
 
 func _late_count_lightnodes() -> void:
