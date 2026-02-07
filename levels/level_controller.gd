@@ -41,6 +41,9 @@ func _ready() -> void:
 	# Apply level bounds to camera
 	_configure_camera_limits()
 
+	# Freeze gameplay during intro
+	_setup_intro()
+
 
 func _configure_camera_limits() -> void:
 	var ictio := get_node_or_null("%Ictio")
@@ -105,3 +108,30 @@ func _update_world_lighting() -> void:
 		var target_color: Color = dark_color.lerp(lit_color, progress)
 		var tween := create_tween()
 		tween.tween_property(tint, "color", target_color, 0.5).set_ease(Tween.EASE_OUT)
+
+
+func _setup_intro() -> void:
+	var intro := get_node_or_null("%LevelIntro")
+	if not intro:
+		return
+
+	# Freeze player and nervous system during intro
+	var ictio := get_node_or_null("%Ictio")
+	if ictio:
+		ictio.process_mode = Node.PROCESS_MODE_DISABLED
+
+	var nervous := get_node_or_null("%NervousSystem")
+	if nervous:
+		nervous.process_mode = Node.PROCESS_MODE_DISABLED
+
+	intro.intro_dismissed.connect(_on_intro_dismissed)
+
+
+func _on_intro_dismissed() -> void:
+	var ictio := get_node_or_null("%Ictio")
+	if ictio:
+		ictio.process_mode = Node.PROCESS_MODE_INHERIT
+
+	var nervous := get_node_or_null("%NervousSystem")
+	if nervous:
+		nervous.process_mode = Node.PROCESS_MODE_INHERIT

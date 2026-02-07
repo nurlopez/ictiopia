@@ -10,5 +10,4 @@
 # Mono / C#
 .mono/
 data_*/
-assets/art/.DS_Store
-.DS_Store
+**/.DS_Store

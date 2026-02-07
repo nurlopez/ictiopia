@@ -1,0 +1,49 @@
+[gd_scene load_steps=7 format=3 uid="uid://c4lvlintro2d"]
+
+[ext_resource type="Script" path="res://scenes/ui/level_intro.gd" id="1_intro"]
+[ext_resource type="Script" path="res://scenes/ui/intro_step_movement.gd" id="2_move"]
+[ext_resource type="Script" path="res://scenes/ui/intro_step_speed.gd" id="3_speed"]
+[ext_resource type="Script" path="res://scenes/ui/intro_step_lightnode.gd" id="4_lnode"]
+[ext_resource type="Script" path="res://scenes/ui/intro_step_portal.gd" id="5_portal"]
+[ext_resource type="Texture2D" uid="uid://cdcq43a5p8d48" path="res://assets/art/bubble.png" id="6_glow"]
+
+[node name="LevelIntro" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_intro")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.015, 0.03, 0.2, 0.92)
+
+[node name="Step1" type="Node2D" parent="."]
+position = Vector2(220, 340)
+script = ExtResource("2_move")
+
+[node name="Step2" type="Node2D" parent="."]
+position = Vector2(460, 340)
+script = ExtResource("3_speed")
+
+[node name="Step3" type="Node2D" parent="."]
+position = Vector2(700, 340)
+script = ExtResource("4_lnode")
+
+[node name="Step4" type="Node2D" parent="."]
+position = Vector2(940, 340)
+script = ExtResource("5_portal")
+
+[node name="AmbientGlow" type="PointLight2D" parent="."]
+position = Vector2(640, 360)
+color = Color(0.012, 0.012, 0.804, 1)
+energy = 0.3
+texture = ExtResource("6_glow")
+texture_scale = 8.0

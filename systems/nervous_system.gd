@@ -37,6 +37,10 @@ func _connect_subsystems() -> void:
 	if stress_manager and soundscape_manager:
 		stress_manager.stress_changed.connect(soundscape_manager.on_stress_changed)
 
+	# Connect stress to membrane walls
+	if stress_manager:
+		stress_manager.stress_changed.connect(_on_stress_to_walls)
+
 	# Setup audio-visual sync bridge
 	if audio_visual_sync:
 		audio_visual_sync.setup(circuit_network, soundscape_manager)
@@ -61,3 +65,9 @@ func get_player_position() -> Vector2:
 	if _ictio:
 		return _ictio.global_position
 	return Vector2.ZERO
+
+
+func _on_stress_to_walls(stress: float) -> void:
+	for wall in get_tree().get_nodes_in_group("membrane_walls"):
+		if wall.has_method("on_stress_changed"):
+			wall.on_stress_changed(stress)
