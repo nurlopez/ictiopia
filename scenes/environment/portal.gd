@@ -15,10 +15,10 @@ extends Area2D
 @export var ring_count: int = 2
 @export var base_radius: float = 12.0
 @export var ring_spacing: float = 10.0
-@export var ring_width: float = 6.0
+@export var ring_width: float = 1.0
 
 # Organic wobble controls
-@export var wobble_strength: float = 0.08 # how “wavy” the membrane is
+@export var wobble_strength: float = 1 # how “wavy” the membrane is
 @export var wobble_speed: float = 0.8 # how fast it flows
 @export var wobble_freq_1: float = 3.0 # big undulations
 @export var wobble_freq_2: float = 7.0 # small ripples

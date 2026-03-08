@@ -12,6 +12,11 @@ var _fast_color := Color(0.953, 0.027, 0.043, 0.7)
 var _glow_good := Color(0.5, 0.92, 1.0, 0.25)
 var _dim_trail := Color(0.027, 0.063, 0.455, 0.25)
 var _red_trail := Color(0.953, 0.027, 0.043, 0.3)
+var _time_offset: float = 0.0
+
+
+func reset_animation() -> void:
+	_time_offset = Time.get_ticks_msec() / 1000.0
 
 
 func _ready() -> void:
@@ -24,7 +29,7 @@ func _process(_delta: float) -> void:
 
 
 func _draw() -> void:
-	var t := Time.get_ticks_msec() / 1000.0
+	var t := (Time.get_ticks_msec() / 1000.0) - _time_offset
 
 	# Three rows, each offset vertically
 	var row_spacing: float = 50.0

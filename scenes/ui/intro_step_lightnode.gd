@@ -18,6 +18,11 @@ var _dim_color := Color(0.015, 0.022, 0.171, 0.6)
 var _lit_color := Color(0.953, 0.027, 0.043, 1.0)
 var _fish_color := Color(0.012, 0.012, 0.804, 0.9)
 var _glow_color := Color(0.953, 0.027, 0.043, 0.2)
+var _time_offset: float = 0.0
+
+
+func reset_animation() -> void:
+	_time_offset = Time.get_ticks_msec() / 1000.0
 
 
 func _ready() -> void:
@@ -31,7 +36,7 @@ func _process(_delta: float) -> void:
 
 
 func _draw() -> void:
-	var t := Time.get_ticks_msec() / 1000.0
+	var t := (Time.get_ticks_msec() / 1000.0) - _time_offset
 	var cycle_t := fmod(t, CYCLE_DURATION)
 
 	# Lightnode position (right of center)

@@ -10,7 +10,7 @@ var _node_size := Vector2(20, 20)
 # Portal visual settings (matching portal.gd)
 var ring_color := Color(0.5, 0.92, 1.0, 0.55)
 var core_color := Color(0.85, 0.95, 1.0, 0.4)
-var wobble_strength: float = 0.08
+var wobble_strength: float = 1.0
 var wobble_speed: float = 0.8
 var wobble_freq_1: float = 3.0
 var wobble_freq_2: float = 7.0
@@ -18,12 +18,17 @@ var wobble_freq_2: float = 7.0
 var _lit_color := Color(0.953, 0.027, 0.043, 1.0)
 var _glow_color := Color(0.953, 0.027, 0.043, 0.2)
 var _fish_color := Color(0.012, 0.012, 0.804, 0.9)
+var _time_offset: float = 0.0
 
 const CYCLE_DURATION: float = 5.0
 const NODES_LIT_END: float = 1.5    # lightnodes light up
 const PORTAL_OPEN_END: float = 2.5  # portal appears
 const FISH_ENTER_END: float = 4.0   # fish swims into portal
 # 4.0 - 5.0 = reset
+
+
+func reset_animation() -> void:
+	_time_offset = Time.get_ticks_msec() / 1000.0
 
 
 func _ready() -> void:
@@ -37,7 +42,7 @@ func _process(_delta: float) -> void:
 
 
 func _draw() -> void:
-	var t := Time.get_ticks_msec() / 1000.0
+	var t := (Time.get_ticks_msec() / 1000.0) - _time_offset
 	var cycle_t := fmod(t, CYCLE_DURATION)
 
 	# --- Three lit lightnodes at top ---
@@ -135,13 +140,13 @@ func _draw_portal(center: Vector2, t: float, alpha: float) -> void:
 
 		var ring_alpha: float = ring_color.a * alpha * (1.0 - fi * 0.18)
 		var col := Color(ring_color.r, ring_color.g, ring_color.b, ring_alpha)
-		var width: float = 3.0 * (0.85 - fi * 0.20) * (0.9 + sin(t * 1.05 + fi) * 0.10)
+		var width: float = 1.0 * (0.85 - fi * 0.20) * (0.9 + sin(t * 1.05 + fi) * 0.10)
 
 		_draw_membrane_arc(center, radius, start_angle, end_angle, col, width, fi * 10.0 + 1.3, t)
 
 		# Glow
 		var glow_col := Color(col.r, col.g, col.b, ring_alpha * 0.22)
-		_draw_membrane_arc(center, radius, start_angle, end_angle, glow_col, width + 3.0, fi * 10.0 + 9.7, t)
+		_draw_membrane_arc(center, radius, start_angle, end_angle, glow_col, width + 5.0, fi * 10.0 + 9.7, t)
 
 
 func _membrane_radius(base: float, angle: float, t: float, seed: float) -> float:

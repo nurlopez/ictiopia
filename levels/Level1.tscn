@@ -63,8 +63,6 @@ layout_mode = 3
 [node name="Portal" parent="." instance=ExtResource("6_i25xe")]
 unique_name_in_owner = true
 position = Vector2(300, 580)
-ring_width = 1.0
-wobble_strength = 1.0
 
 [node name="LevelController" type="Node" parent="."]
 unique_name_in_owner = true

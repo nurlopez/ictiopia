@@ -4,6 +4,11 @@ extends Node2D
 
 var _fish_tex: Texture2D
 var _fish_size := Vector2(32, 32)
+var _time_offset: float = 0.0
+
+
+func reset_animation() -> void:
+	_time_offset = Time.get_ticks_msec() / 1000.0
 
 
 func _ready() -> void:
@@ -16,7 +21,7 @@ func _process(_delta: float) -> void:
 
 
 func _draw() -> void:
-	var t := Time.get_ticks_msec() / 1000.0
+	var t := (Time.get_ticks_msec() / 1000.0) - _time_offset
 
 	# Fish bob gently
 	var bob := Vector2(sin(t * 0.9) * 2.0, cos(t * 1.1) * 1.5)
