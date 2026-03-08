@@ -2,6 +2,8 @@
 
 Ictiopia's mechanics are introduced progressively, each layer building on the previous. This creates a learning curve that mirrors the game's themes of sensory regulation and intentional action.
 
+> **Implementation status:** Mechanic I (Speed Moderation) is fully implemented in Level 1, including the stabilize sub-mechanic, nervous system/stress feedback, circuit network, soundscape, membrane walls, intro tutorial, and HUD. Mechanics II–IV are design goals for future levels.
+
 ---
 
 ## Mechanic I — Speed Moderation
@@ -33,6 +35,14 @@ Rotate all required objects to their target angles.
 | `max_effective_speed` | Above this, bumps have no effect |
 | `angle_step_deg` | Rotation increment per valid bump |
 | `required_angle_deg` | Target angle to "solve" the object |
+
+### Stabilize Sub-Mechanic (Mechanic I)
+
+Hold spacebar to enter stabilize mode:
+- Acceleration is dampened (0.2x scale) and friction increased (2.0x scale)
+- Smooth directional changes via `stabilize_turn_speed`
+- PointLight2D glow feedback (brighter when stabilizing)
+- Helps maintain goldilocks zone speed for lightnode interaction
 
 ---
 
