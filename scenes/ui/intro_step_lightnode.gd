@@ -2,11 +2,10 @@ extends Node2D
 
 ## Pictogram: Lightnode interaction — looping cycle of approach, rotate, light up.
 
-var _fish_tex: Texture2D
 var _node_tex: Texture2D
-var _fish_size := Vector2(24, 24)
 var _node_size := Vector2(28, 28)
 
+const FISH_SCALE := 0.45
 const CYCLE_DURATION: float = 4.0  # seconds for full loop
 # Phase timings within cycle:
 const APPROACH_END: float = 1.2    # fish slides in
@@ -16,7 +15,7 @@ const GLOW_END: float = 3.2       # lightnode glows brightly
 
 var _dim_color := Color(0.015, 0.022, 0.171, 0.6)
 var _lit_color := Color(0.953, 0.027, 0.043, 1.0)
-var _fish_color := Color(0.012, 0.012, 0.804, 0.9)
+var _fish_color := Color(1.0, 1.0, 1.0, 0.9)
 var _glow_color := Color(0.953, 0.027, 0.043, 0.2)
 var _time_offset: float = 0.0
 
@@ -26,7 +25,6 @@ func reset_animation() -> void:
 
 
 func _ready() -> void:
-	_fish_tex = preload("res://assets/art/ictio/carp/ictio-1.png")
 	_node_tex = preload("res://assets/art/lightnodes/lightnode-01.png")
 	set_process(true)
 
@@ -119,7 +117,6 @@ func _draw() -> void:
 		var halo_pulse: float = 1.0 + sin(t * 1.6) * 0.12
 		draw_circle(fish_pos, 16.0 * halo_pulse, Color(0.5, 0.92, 1.0, 0.1 * fish_alpha))
 
-	if _fish_tex:
-		var rect := Rect2(fish_pos - _fish_size * 0.5, _fish_size)
-		var col := Color(_fish_color.r, _fish_color.g, _fish_color.b, _fish_color.a * fish_alpha)
-		draw_texture_rect(_fish_tex, rect, false, col)
+	var col := Color(_fish_color.r, _fish_color.g, _fish_color.b, _fish_color.a * fish_alpha)
+	var sway: float = sin(t * 3.0) * 1.5
+	FishDrawUtils.draw_fish(self, fish_pos, FISH_SCALE, col, 0.0, sway)

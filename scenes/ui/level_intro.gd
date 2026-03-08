@@ -166,7 +166,7 @@ func _draw_dots() -> void:
 		return
 
 	# --- Progress dots at bottom ---
-	var dot_spacing: float = 30.0
+	var dot_spacing: float = 48.0
 	var dots_start_x: float = _dots_layer.size.x * 0.5 - (float(total_steps - 1) * dot_spacing) / 2.0
 
 	for i in range(total_steps):

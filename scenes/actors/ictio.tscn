@@ -1,51 +1,7 @@
-[gd_scene load_steps=17 format=3 uid="uid://dq2t7e1e5nohl"]
+[gd_scene load_steps=8 format=3 uid="uid://dq2t7e1e5nohl"]
 
-[ext_resource type="Texture2D" path="res://assets/art/ictio/carp/ictio-1.png" id="1_jy5cu"]
-[ext_resource type="Texture2D" path="res://assets/art/ictio/carp/ictio-2.png" id="2_conu3"]
-[ext_resource type="Texture2D" path="res://assets/art/ictio/carp/ictio-3.png" id="3_1hlxj"]
-[ext_resource type="Texture2D" path="res://assets/art/ictio/carp/ictio-4.png" id="4_10nje"]
-[ext_resource type="Texture2D" path="res://assets/art/ictio/carp/ictio-5.png" id="5_pwr5h"]
-[ext_resource type="Texture2D" path="res://assets/art/ictio/carp/ictio-6.png" id="6_ogmqx"]
-[ext_resource type="Texture2D" path="res://assets/art/ictio/carp/ictio-7.png" id="7_6yt5r"]
-[ext_resource type="Texture2D" path="res://assets/art/ictio/carp/ictio-8.png" id="8_tnv3g"]
 [ext_resource type="Texture2D" uid="uid://cdcq43a5p8d48" path="res://assets/art/bubble.png" id="12_xeln8"]
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_r8mwa"]
-animations = [{
-"frames": [],
-"loop": true,
-"name": &"default",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": ExtResource("1_jy5cu")
-}, {
-"duration": 1.0,
-"texture": ExtResource("2_conu3")
-}, {
-"duration": 1.0,
-"texture": ExtResource("3_1hlxj")
-}, {
-"duration": 1.0,
-"texture": ExtResource("4_10nje")
-}, {
-"duration": 1.0,
-"texture": ExtResource("5_pwr5h")
-}, {
-"duration": 1.0,
-"texture": ExtResource("6_ogmqx")
-}, {
-"duration": 1.0,
-"texture": ExtResource("7_6yt5r")
-}, {
-"duration": 1.0,
-"texture": ExtResource("8_tnv3g")
-}],
-"loop": true,
-"name": &"swim",
-"speed": 6.0
-}]
+[ext_resource type="Script" path="res://scenes/actors/fish_body.gd" id="fish_body"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_vw15s"]
 radius = 22.0
@@ -79,14 +35,9 @@ color_ramp = SubResource("GradientTexture1D_qhyfx")
 
 [node name="Ictio" type="CharacterBody2D"]
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
-rotation = 0
+[node name="FishBody" type="Node2D" parent="."]
 scale = Vector2(0.8, 0.8)
-modulate = Color(0.011765, 0.011765, 0.803922, 1)
-sprite_frames = SubResource("SpriteFrames_r8mwa")
-animation = &"swim"
-autoplay = "swim"
-frame_progress = 0.119285
+script = ExtResource("fish_body")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_vw15s")
@@ -105,9 +56,3 @@ texture = ExtResource("12_xeln8")
 lifetime = 1.2
 visibility_rect = Rect2(-200, -100, 512, 512)
 trail_lifetime = 1.0
-
-[node name="PointLight2D" type="PointLight2D" parent="."]
-color = Color(0.011765, 0.011765, 0.803922, 1)
-energy = 0.6
-texture = ExtResource("12_xeln8")
-texture_scale = 4.0

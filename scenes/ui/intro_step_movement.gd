@@ -2,9 +2,9 @@ extends Node2D
 
 ## Pictogram: Movement — fish with 4 organic directional tendrils.
 
-var _fish_tex: Texture2D
-var _fish_size := Vector2(32, 32)
 var _time_offset: float = 0.0
+const FISH_SCALE := 0.6
+const FISH_COLOR := Color(1.0, 1.0, 1.0, 0.9)
 
 
 func reset_animation() -> void:
@@ -12,7 +12,6 @@ func reset_animation() -> void:
 
 
 func _ready() -> void:
-	_fish_tex = preload("res://assets/art/ictio/carp/ictio-1.png")
 	set_process(true)
 
 
@@ -25,11 +24,10 @@ func _draw() -> void:
 
 	# Fish bob gently
 	var bob := Vector2(sin(t * 0.9) * 2.0, cos(t * 1.1) * 1.5)
+	var sway := sin(t * 2.5) * 2.0
 
 	# Draw fish at center
-	if _fish_tex:
-		var rect := Rect2(-_fish_size * 0.5 + bob, _fish_size)
-		draw_texture_rect(_fish_tex, rect, false, Color(0.012, 0.012, 0.804, 0.9))
+	FishDrawUtils.draw_fish(self, bob, FISH_SCALE, FISH_COLOR, 0.0, sway)
 
 	# Four directional organic tendrils
 	var directions := [
@@ -55,8 +53,8 @@ func _draw() -> void:
 
 func _draw_tendril(origin: Vector2, dir: Vector2, t: float, phase: float, brightness: float) -> void:
 	var base_length: float = 55.0
-	var color := Color(0.012, 0.012, 0.804, 0.6 * brightness)
-	var glow := Color(0.5, 0.92, 1.0, 0.15 * brightness)
+	var color := Color(1.0, 1.0, 1.0, 0.5 * brightness)
+	var glow := Color(0.5, 0.92, 1.0, 0.12 * brightness)
 
 	# Build an organic tendril using wobbly points
 	var pts := PackedVector2Array()
@@ -88,5 +86,5 @@ func _draw_tendril(origin: Vector2, dir: Vector2, t: float, phase: float, bright
 	if pts.size() > 0:
 		var tip: Vector2 = pts[pts.size() - 1]
 		var tip_pulse: float = 0.5 + sin(t * 2.2 + phase) * 0.3
-		draw_circle(tip, 4.0 * tip_pulse, Color(0.5, 0.92, 1.0, 0.3 * brightness))
-		draw_circle(tip, 2.0 * tip_pulse, Color(0.85, 0.95, 1.0, 0.5 * brightness))
+		draw_circle(tip, 4.0 * tip_pulse, Color(0.5, 0.92, 1.0, 0.25 * brightness))
+		draw_circle(tip, 2.0 * tip_pulse, Color(0.85, 0.95, 1.0, 0.4 * brightness))

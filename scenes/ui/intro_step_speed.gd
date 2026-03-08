@@ -2,15 +2,14 @@ extends Node2D
 
 ## Pictogram: Speed moderation — three tiers: too slow (dim), correct (bright), too fast (red).
 
-var _fish_tex: Texture2D
-var _fish_size := Vector2(24, 24)
+const FISH_SCALE := 0.45
 
-# Colors matching game palette
-var _slow_color := Color(0.027, 0.063, 0.455, 0.5)
-var _good_color := Color(0.012, 0.012, 0.804, 0.9)
+# Fish colors per speed zone
+var _slow_color := Color(1.0, 1.0, 1.0, 0.3)
+var _good_color := Color(1.0, 1.0, 1.0, 0.9)
 var _fast_color := Color(0.953, 0.027, 0.043, 0.7)
 var _glow_good := Color(0.5, 0.92, 1.0, 0.25)
-var _dim_trail := Color(0.027, 0.063, 0.455, 0.25)
+var _dim_trail := Color(1.0, 1.0, 1.0, 0.15)
 var _red_trail := Color(0.953, 0.027, 0.043, 0.3)
 var _time_offset: float = 0.0
 
@@ -20,7 +19,6 @@ func reset_animation() -> void:
 
 
 func _ready() -> void:
-	_fish_tex = preload("res://assets/art/ictio/carp/ictio-1.png")
 	set_process(true)
 
 
@@ -51,10 +49,13 @@ func _draw_speed_row(center: Vector2, t: float, speed_factor: float, fish_color:
 	# Fish moves back and forth at given speed
 	var cycle: float = fmod(t * speed_factor, 2.0)
 	var fish_x: float
+	var facing_left: bool
 	if cycle < 1.0:
 		fish_x = lerpf(-row_width * 0.4, row_width * 0.4, cycle)
+		facing_left = false
 	else:
 		fish_x = lerpf(row_width * 0.4, -row_width * 0.4, cycle - 1.0)
+		facing_left = true
 
 	var fish_pos := center + Vector2(fish_x, 0)
 
@@ -71,7 +72,7 @@ func _draw_speed_row(center: Vector2, t: float, speed_factor: float, fish_color:
 		var trail_offset: float = frac * 30.0 * speed_factor
 
 		# Trail behind the fish (opposite to movement direction)
-		var dir_sign: float = 1.0 if fmod(t * speed_factor, 2.0) < 1.0 else -1.0
+		var dir_sign: float = 1.0 if not facing_left else -1.0
 		var dot_pos := fish_pos - Vector2(dir_sign * trail_offset, 0)
 
 		# Wobble for fast speed
@@ -83,16 +84,10 @@ func _draw_speed_row(center: Vector2, t: float, speed_factor: float, fish_color:
 		draw_circle(dot_pos, dot_radius, Color(trail_color.r, trail_color.g, trail_color.b, dot_alpha))
 
 	# Draw fish
-	if _fish_tex:
-		var rect := Rect2(fish_pos - _fish_size * 0.5, _fish_size)
-		# Flip based on direction
-		if fmod(t * speed_factor, 2.0) >= 1.0:
-			rect.position.x += rect.size.x
-			rect.size.x = -rect.size.x
-		draw_texture_rect(_fish_tex, rect, false, fish_color)
+	var sway: float = sin(t * 3.0 * speed_factor) * (1.5 * speed_factor)
+	FishDrawUtils.draw_fish(self, fish_pos, FISH_SCALE, fish_color, 0.0, sway, facing_left)
 
-	# Wrong rows: subtle X or dimming indicator
+	# Wrong rows: subtle dimming indicator
 	if not is_correct:
-		# Draw faint "wrong" indicator — a small dimming ring
 		var dim_pulse: float = 0.3 + sin(t * 2.5) * 0.15
 		draw_circle(center + Vector2(row_width * 0.48, 0), 5.0, Color(fish_color.r, fish_color.g, fish_color.b, dim_pulse * 0.3))

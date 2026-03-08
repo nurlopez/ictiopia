@@ -29,8 +29,16 @@ var current_angle_deg: float = 0.0
 @export var knockback_pixels: float = 48.0      # bounce distance on wrong speed
 @export var proximity_radius: float = 120.0     # distance for color feedback
 
+# --- Progress glow ---
+@export var progress_max_energy: float = 0.45
+@export var progress_light_color: Color = Color(0.15, 0.15, 0.6)  # muted blue, distinct from lit red
+var _initial_angle_delta: float = 0.0
+var _progress: float = 0.0
+
 # --- Internal state ---
 var _wobble_tween: Tween = null
+var _reject_tween: Tween = null
+var _reject_cooldown: bool = false
 var _original_modulate: Color
 var _is_fixed: bool = false  # true once lightnode reaches target angle
 
@@ -79,6 +87,11 @@ func _ready() -> void:
 	current_angle_deg = _wrap360(start_angle_deg)
 	sprite.rotation_degrees = current_angle_deg
 
+	# Compute initial distance for progress tracking
+	_initial_angle_delta = _angle_delta(current_angle_deg, required_angle_deg)
+	if _initial_angle_delta < angle_tolerance_deg:
+		_initial_angle_delta = 0.0
+
 	# Optional: animation
 	if anim:
 		anim.play("pulse")
@@ -99,8 +112,8 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	# Skip proximity feedback if already fixed (lit)
-	if _is_fixed:
+	# Skip proximity feedback if already fixed (lit) or mid-rejection
+	if _is_fixed or _reject_cooldown:
 		return
 
 	# Proximity color feedback based on Ictio's speed
@@ -132,22 +145,98 @@ func _process(_delta: float) -> void:
 	sprite.modulate = _original_modulate.lerp(tint, blend * 0.7)
 
 
-func _wobble() -> void:
-	# Visual feedback: object wobbles but does NOT rotate
-	if sprite == null:
+func _reject(is_too_fast: bool) -> void:
+	if sprite == null or _reject_cooldown:
 		return
+	_reject_cooldown = true
 
-	# Kill any existing wobble to prevent drift from mid-animation captures
+	# Kill any existing tweens
+	if _reject_tween and _reject_tween.is_valid():
+		_reject_tween.kill()
 	if _wobble_tween and _wobble_tween.is_valid():
 		_wobble_tween.kill()
 
-	# Use logical angle (current_angle_deg), not visual angle, as the return target
+	# Stop pulse animation to prevent scale fighting
+	if anim:
+		anim.stop()
+
+	# Direction-dependent parameters
+	var flash_color: Color
+	var scale_target: Vector2
+	var wobble_amp: float
+	var swing_time: float
+	if is_too_fast:
+		flash_color = Color(0.952941, 0.027451, 0.043137)  # red
+		scale_target = Vector2.ONE * icon_scale * 1.25
+		wobble_amp = 15.0
+		swing_time = 0.06
+	else:
+		flash_color = Color(0.027451, 0.062745, 0.454902)  # deep blue
+		scale_target = Vector2.ONE * icon_scale * 0.75
+		wobble_amp = 10.0
+		swing_time = 0.09
+
+	var base_scale: Vector2 = Vector2.ONE * icon_scale
 	var target_rot: float = current_angle_deg
-	_wobble_tween = create_tween()
-	_wobble_tween.tween_property(sprite, "rotation_degrees", target_rot + 8.0, 0.05)
-	_wobble_tween.tween_property(sprite, "rotation_degrees", target_rot - 8.0, 0.1)
-	_wobble_tween.tween_property(sprite, "rotation_degrees", target_rot + 4.0, 0.08)
-	_wobble_tween.tween_property(sprite, "rotation_degrees", target_rot, 0.07)
+
+	_reject_tween = create_tween()
+
+	# Phase 1: snap to flash state (parallel)
+	_reject_tween.set_parallel(true)
+	_reject_tween.tween_property(sprite, "modulate", flash_color, 0.08)
+	_reject_tween.tween_property(sprite, "scale", scale_target, 0.08).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	_reject_tween.tween_property(sprite, "rotation_degrees", target_rot + wobble_amp, 0.08)
+	if point_light:
+		_reject_tween.tween_property(point_light, "energy", 0.8, 0.08)
+		point_light.color = flash_color
+		point_light.enabled = true
+
+	# Phase 2: oscillation swings (sequential)
+	_reject_tween.chain().set_parallel(false)
+	_reject_tween.tween_property(sprite, "rotation_degrees", target_rot - wobble_amp, swing_time)
+	_reject_tween.tween_property(sprite, "rotation_degrees", target_rot + wobble_amp, swing_time)
+	_reject_tween.tween_property(sprite, "rotation_degrees", target_rot - wobble_amp, swing_time)
+
+	# Phase 3: recover to normal (parallel)
+	_reject_tween.chain().set_parallel(true)
+	_reject_tween.tween_property(sprite, "modulate", _original_modulate, 0.2).set_ease(Tween.EASE_OUT)
+	_reject_tween.tween_property(sprite, "scale", base_scale, 0.2).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	_reject_tween.tween_property(sprite, "rotation_degrees", target_rot, 0.2).set_ease(Tween.EASE_OUT)
+	if point_light:
+		_reject_tween.tween_property(point_light, "energy", 0.0, 0.2).set_ease(Tween.EASE_OUT)
+
+	# Cleanup callback
+	_reject_tween.chain().set_parallel(false)
+	_reject_tween.tween_callback(_reject_cleanup)
+
+
+func _reject_cleanup() -> void:
+	_reject_cooldown = false
+	if point_light:
+		if _progress > 0.01:
+			# Restore progress glow instead of blanking
+			point_light.color = progress_light_color
+			point_light.energy = _progress * progress_max_energy
+			point_light.enabled = true
+		else:
+			point_light.enabled = false
+	if anim:
+		anim.play("pulse")
+
+
+func _play_reject_tone(is_too_fast: bool) -> void:
+	if audio_player == null:
+		return
+	var beep_stream := load("res://assets/audio/beepbeep.mp3")
+	if beep_stream == null:
+		return
+	audio_player.stream = beep_stream
+	audio_player.pitch_scale = 1.8 if is_too_fast else 0.6
+	audio_player.volume_db = -8.0
+	audio_player.play()
+	# Reset pitch after sound plays
+	var reset_tween := create_tween()
+	reset_tween.tween_callback(func(): audio_player.pitch_scale = 1.0).set_delay(0.3)
 
 
 func _on_body_entered(body: Node) -> void:
@@ -170,19 +259,17 @@ func _on_body_entered(body: Node) -> void:
 	var in_goldilocks: bool = speed >= min_effective_speed and speed <= max_effective_speed
 
 	if not in_goldilocks:
-		# Wrong speed: wobble, NO rotation
-		_wobble()
-
-		# Fail SFX
-		if fail_sound and audio_player:
-			audio_player.stream = fail_sound
-			audio_player.volume_db = -6.0
-			audio_player.play()
+		var is_too_fast: bool = speed > max_effective_speed
+		_reject(is_too_fast)
+		_play_reject_tone(is_too_fast)
 		return
 
 	# --- Correct speed: rotate by one step ---
 	current_angle_deg = _wrap360(current_angle_deg + angle_step_deg)
 	sprite.rotation_degrees = current_angle_deg
+
+	# Update progress glow
+	_update_progress_glow()
 
 	# Rotate tick SFX
 	if rotate_sound and audio_player:
@@ -213,10 +300,24 @@ func _on_body_entered(body: Node) -> void:
 		_become_lit()
 
 
+func _update_progress_glow() -> void:
+	if _initial_angle_delta <= 0.0 or point_light == null:
+		return
+	var remaining: float = _angle_delta(current_angle_deg, required_angle_deg)
+	_progress = clampf(1.0 - (remaining / _initial_angle_delta), 0.0, 1.0)
+	point_light.color = progress_light_color
+	point_light.enabled = true
+	var tween := create_tween()
+	tween.tween_property(point_light, "energy", _progress * progress_max_energy, 0.3).set_ease(Tween.EASE_OUT)
+
+
 func _become_lit() -> void:
-	# Stop any ongoing wobble
+	# Stop any ongoing rejection/wobble
 	if _wobble_tween and _wobble_tween.is_valid():
 		_wobble_tween.kill()
+	if _reject_tween and _reject_tween.is_valid():
+		_reject_tween.kill()
+	_reject_cooldown = false
 
 	# Stop pulse animation
 	if anim:

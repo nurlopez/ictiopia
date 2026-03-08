@@ -17,11 +17,11 @@ extends CharacterBody2D
 # --- Bubbles (GPUParticles2D) refs ---
 @onready var bubbles: GPUParticles2D = $Bubbles
 @onready var bubbles_mat: ParticleProcessMaterial = bubbles.process_material
-@onready var stabilize_glow: PointLight2D = $PointLight2D
-
-# --- Stabilize glow ---
-@export var stabilize_glow_energy: float = 1.15
-@export var stabilize_glow_lerp: float = 8.0
+# --- Speed zone colors ---
+const ZONE_SLOW_COLOR := Color(0.027451, 0.062745, 0.454902)   # deep blue
+const ZONE_GOOD_COLOR := Color(0.011765, 0.011765, 0.803922)   # bright blue
+const ZONE_FAST_COLOR := Color(0.952941, 0.027451, 0.043137)   # red
+@export var zone_color_lerp: float = 4.0
 
 signal speed_changed(speed: float)
 
@@ -83,11 +83,6 @@ func _physics_process(delta: float) -> void:
 		if input_vec == Vector2.ZERO:
 			velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
 
-	# Stabilize glow (non-verbal cue)
-	if stabilize_glow:
-		var target_energy: float = stabilize_glow_energy if stabilizing else 0.6
-		stabilize_glow.energy = lerpf(stabilize_glow.energy, target_energy, stabilize_glow_lerp * delta)
-
 	move_and_slide()
 
 	# --- Face movement direction ---
@@ -98,5 +93,24 @@ func _physics_process(delta: float) -> void:
 	var speed: float = velocity.length()
 	speed_changed.emit(speed)
 
-	# --- Bubbles: disabled ---
-	bubbles.emitting = false
+	# --- Speed zone bubbles + light color ---
+	var zone_color: Color = ZONE_GOOD_COLOR
+	if speed < 5.0:
+		bubbles.emitting = false
+	elif speed < min_effective_speed:
+		bubbles.emitting = true
+		bubbles.amount_ratio = lerpf(0.05, 0.3, speed / min_effective_speed)
+		zone_color = ZONE_SLOW_COLOR
+	elif speed <= max_effective_speed:
+		bubbles.emitting = true
+		var t: float = (speed - min_effective_speed) / (max_effective_speed - min_effective_speed)
+		bubbles.amount_ratio = lerpf(0.3, 0.55, t)
+		zone_color = ZONE_GOOD_COLOR
+	else:
+		bubbles.emitting = true
+		var t: float = clampf((speed - max_effective_speed) / (max_speed - max_effective_speed), 0.0, 1.0)
+		bubbles.amount_ratio = lerpf(0.55, 1.0, t)
+		zone_color = ZONE_FAST_COLOR
+
+	if bubbles.emitting:
+		bubbles.modulate = bubbles.modulate.lerp(zone_color, zone_color_lerp * delta)

@@ -2,10 +2,10 @@ extends Node2D
 
 ## Pictogram: Portal completion — three lit lightnodes + open portal + fish enters.
 
-var _fish_tex: Texture2D
 var _node_tex: Texture2D
-var _fish_size := Vector2(20, 20)
 var _node_size := Vector2(20, 20)
+
+const FISH_SCALE := 0.38
 
 # Portal visual settings (matching portal.gd)
 var ring_color := Color(0.5, 0.92, 1.0, 0.55)
@@ -17,7 +17,7 @@ var wobble_freq_2: float = 7.0
 
 var _lit_color := Color(0.953, 0.027, 0.043, 1.0)
 var _glow_color := Color(0.953, 0.027, 0.043, 0.2)
-var _fish_color := Color(0.012, 0.012, 0.804, 0.9)
+var _fish_color := Color(1.0, 1.0, 1.0, 0.9)
 var _time_offset: float = 0.0
 
 const CYCLE_DURATION: float = 5.0
@@ -32,7 +32,6 @@ func reset_animation() -> void:
 
 
 func _ready() -> void:
-	_fish_tex = preload("res://assets/art/ictio/carp/ictio-1.png")
 	_node_tex = preload("res://assets/art/lightnodes/lightnode-01.png")
 	set_process(true)
 
@@ -110,10 +109,10 @@ func _draw() -> void:
 		fish_alpha = clampf((cycle_t - NODES_LIT_END) / 0.5, 0.0, 0.8)
 		fish_pos = Vector2(-60, 30)
 
-	if fish_alpha > 0.01 and _fish_tex:
-		var rect := Rect2(fish_pos - _fish_size * 0.5, _fish_size)
+	if fish_alpha > 0.01:
 		var col := Color(_fish_color.r, _fish_color.g, _fish_color.b, _fish_color.a * fish_alpha)
-		draw_texture_rect(_fish_tex, rect, false, col)
+		var sway: float = sin(t * 3.0) * 1.5
+		FishDrawUtils.draw_fish(self, fish_pos, FISH_SCALE, col, 0.0, sway)
 
 
 func _draw_portal(center: Vector2, t: float, alpha: float) -> void:
