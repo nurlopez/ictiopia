@@ -88,8 +88,22 @@ func _process(_delta: float) -> void:
 	_update_line_activations()
 
 
+func _all_lightnodes_fixed() -> bool:
+	for node in _lightnodes:
+		if not _is_lightnode_fixed(node):
+			return false
+	return true
+
+
 func _update_line_distortions() -> void:
+	# No distortion in goldilocks zone or when all lightnodes are fixed
+	var calm: bool = (_player_speed >= 40.0 and _player_speed <= 160.0) or _all_lightnodes_fixed()
+
 	for line in _lines:
+		if calm:
+			line.set_distortion(0.0)
+			continue
+
 		# Base distortion from stress
 		var stress_distortion: float = lerpf(base_distortion, max_distortion, _stress_level)
 

@@ -16,6 +16,7 @@ extends Area2D
 @export var base_radius: float = 12.0
 @export var ring_spacing: float = 10.0
 @export var ring_width: float = 1.0
+@export var preview_alpha: float = 0.15  # faint hint visible before portal opens
 
 # Organic wobble controls
 @export var wobble_strength: float = 1 # how “wavy” the membrane is
@@ -38,7 +39,7 @@ func _ready() -> void:
 		connect("body_entered", Callable(self , "_on_body_entered"))
 
 	if start_hidden:
-		_visible_amount = 0.0
+		_visible_amount = preview_alpha
 		shape.set_deferred("disabled", true)
 		accepts_player = false
 	else:

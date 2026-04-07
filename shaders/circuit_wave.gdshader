@@ -7,7 +7,7 @@ uniform float audio_pulse : hint_range(0.0, 1.0) = 0.0;
 // Wave properties
 uniform float wave_speed : hint_range(0.5, 5.0) = 2.0;
 uniform float wave_frequency : hint_range(1.0, 20.0) = 8.0;
-uniform float wave_amplitude : hint_range(0.0, 20.0) = 6.0;
+uniform float wave_amplitude : hint_range(0.0, 30.0) = 14.0;
 
 // Noise properties for organic feel
 uniform float noise_scale : hint_range(1.0, 10.0) = 4.0;
@@ -67,7 +67,7 @@ void vertex() {
         float total_displacement = (primary_wave + secondary_wave + organic_offset) * distortion;
 
         // Audio pulse adds extra "breathing" effect
-        total_displacement += sin(time * 3.0) * audio_pulse * wave_amplitude * 0.5;
+        total_displacement += sin(time * 3.0) * audio_pulse * wave_amplitude * 1.0;
 
         // Apply perpendicular displacement (assuming line is mostly horizontal)
         // For more accurate perpendicular, you'd need to pass tangent info

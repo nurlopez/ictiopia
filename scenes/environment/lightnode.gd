@@ -41,6 +41,7 @@ var _reject_tween: Tween = null
 var _reject_cooldown: bool = false
 var _original_modulate: Color
 var _is_fixed: bool = false  # true once lightnode reaches target angle
+var _ictio: CharacterBody2D  # cached player reference
 
 # --- Rotation puzzle ---
 @export var angle_step_deg: float = 45.0
@@ -110,39 +111,59 @@ func _ready() -> void:
 	# Store original color for proximity feedback (dark state)
 	_original_modulate = sprite.modulate
 
+	# Cache player reference
+	await get_tree().process_frame
+	_ictio = get_node_or_null("%Ictio")
 
-func _process(_delta: float) -> void:
+
+func _process(delta: float) -> void:
 	# Skip proximity feedback if already fixed (lit) or mid-rejection
 	if _is_fixed or _reject_cooldown:
 		return
 
-	# Proximity color feedback based on Ictio's speed
-	var ictio := get_node_or_null("%Ictio")
-	if ictio == null or sprite == null:
+	if _ictio == null or not is_instance_valid(_ictio) or sprite == null:
 		return
 
-	var dist: float = global_position.distance_to(ictio.global_position)
+	var dist: float = global_position.distance_to(_ictio.global_position)
 	if dist > proximity_radius:
-		# Outside range - restore original color (dark state)
+		# Outside range — restore original state
 		sprite.modulate = _original_modulate
+		sprite.scale = Vector2.ONE * icon_scale
+		if point_light and _progress < 0.01:
+			point_light.energy = lerpf(point_light.energy, 0.0, 4.0 * delta)
 		return
 
-	# Inside proximity range - tint based on speed
-	var speed: float = ictio.velocity.length()
+	# Inside proximity range — tint based on speed
+	var speed: float = _ictio.velocity.length()
+	var blend: float = 1.0 - (dist / proximity_radius)
+	var in_goldilocks: bool = speed >= min_effective_speed and speed <= max_effective_speed
+
 	var tint: Color
 	if speed < min_effective_speed:
-		# Too slow - deep blue tint
 		tint = Color(0.027451, 0.062745, 0.454902)
 	elif speed > max_effective_speed:
-		# Too fast - red tint
 		tint = Color(0.952941, 0.027451, 0.043137)
 	else:
-		# Goldilocks zone - bright blue tint (good!)
 		tint = Color(0.011765, 0.011765, 0.803922)
 
-	# Blend tint with original based on proximity (closer = stronger tint)
-	var blend: float = 1.0 - (dist / proximity_radius)
 	sprite.modulate = _original_modulate.lerp(tint, blend * 0.7)
+
+	# Welcoming pulse when approaching at correct speed
+	if in_goldilocks and speed > 5.0:
+		var t: float = float(Time.get_ticks_msec()) / 1000.0
+		var pulse: float = 1.0 + sin(t * 3.0) * 0.04 * blend
+		sprite.scale = Vector2.ONE * icon_scale * pulse
+
+		# Proximity glow on point light
+		if point_light:
+			var target_energy: float = blend * 0.25
+			point_light.color = progress_light_color
+			point_light.enabled = true
+			point_light.energy = lerpf(point_light.energy, target_energy, 4.0 * delta)
+	else:
+		sprite.scale = Vector2.ONE * icon_scale
+		if point_light and _progress < 0.01:
+			point_light.energy = lerpf(point_light.energy, 0.0, 4.0 * delta)
 
 
 func _reject(is_too_fast: bool) -> void:

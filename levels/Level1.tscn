@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://bdpipoxoclyy7"]
+[gd_scene load_steps=21 format=3 uid="uid://bdpipoxoclyy7"]
 
 [ext_resource type="PackedScene" uid="uid://dq2t7e1e5nohl" path="res://scenes/actors/ictio.tscn" id="1_iqgmq"]
 [ext_resource type="Script" path="res://scenes/actors/ictio.gd" id="3_b8dmh"]
@@ -17,6 +17,7 @@
 [ext_resource type="Script" path="res://systems/audio_visual_sync.gd" id="16_avsync"]
 [ext_resource type="Script" path="res://levels/chamber_layout.gd" id="17_chambers"]
 [ext_resource type="PackedScene" uid="uid://c4lvlintro2d" path="res://scenes/ui/LevelIntro.tscn" id="18_intro"]
+[ext_resource type="Script" path="res://scenes/actors/camera_follow.gd" id="20_camfollow"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_horiz"]
 size = Vector2(1280, 20)
@@ -42,8 +43,10 @@ position = Vector2(200, 250)
 script = ExtResource("3_b8dmh")
 
 [node name="Camera2D" type="Camera2D" parent="Ictio"]
+zoom = Vector2(1.25, 1.25)
 position_smoothing_enabled = true
-position_smoothing_speed = 10.0
+position_smoothing_speed = 6.0
+script = ExtResource("20_camfollow")
 
 [node name="Audio" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
